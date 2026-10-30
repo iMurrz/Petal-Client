@@ -83,10 +83,14 @@ const state = {
   serverStatus: {},
   addingServer: false,
   update: null,
-  updateProgress: null
+  updateProgress: null,
+  lastCrash: null,
+  crashSeen: false,
+  maximized: false
 };
-const TITLES = { home: 'Play', mods: 'Petal modules', instances: 'Instances', downloads: 'Downloads', locker: 'Locker', screenshots: 'Screenshots', settings: 'Settings' };
-const library = { releases: [], name: 'My survival world', version: '1.21.11', loader: 'fabric', loading: false, notice: '' };
+const PAGES = ['home', 'mods', 'content', 'instances', 'downloads', 'locker', 'screenshots', 'console', 'settings'];
+const TITLES = { home: 'Play', mods: 'Petal modules', content: 'Content', instances: 'Instances', downloads: 'Downloads', locker: 'Locker', screenshots: 'Screenshots', console: 'Console', settings: 'Settings' };
+const library = { releases: [], name: 'My survival world', version: '1.21.11', loader: 'fabric', loading: false, notice: '', renaming: null };
 const discover = { query: '', type: 'modpack', hits: [], total: 0, offset: 0, project: null, versions: [], versionId: '', loading: false, review: null, optional: true, installed: [], notice: '', created: null };
 
 function applyBootstrap(boot) {
@@ -97,13 +101,16 @@ function applyBootstrap(boot) {
   state.cosmetics = boot.cosmetics;
   state.game = boot.game;
   $('brand-version').textContent = `SURVIVAL ${boot.version}`;
+  document.body.classList.toggle('reduce-motion', Boolean(boot.settings.reduceMotion));
 }
 async function selectInstance(id) {
   const boot = await attempt(() => window.petal.selectInstance(id));
   if (boot) {
     applyBootstrap(boot);
     discover.hits = []; discover.project = null; discover.versions = []; discover.installed = [];
+    contentView.data = null;
     render();
+    if (state.page === 'content') loadContent();
   }
 }
 function coreOnlyPage(noun) {
@@ -200,9 +207,7 @@ function instancesPage() {
   return h('div', { class: 'catalog-page' },
     h('section', { class: 'card' }, h('h2', { text: 'Your worlds, kept apart' }),
       h('p', { class: 'note', text: 'Each instance has its own worlds, mods, configs and screenshots. Select an instance to switch version for the next launch. Existing worlds are never converted in place.' }),
-      state.boot.instances.map(instance => h('div', { class: 'instance-row' }, h('div', {}, h('h3', { text: instance.name }),
-        h('p', { class: 'note', text: `${instance.gameVersion} · ${instance.loader}${instance.pack ? ` · ${instance.pack.version}` : instance.petal ? ' · Petal HUD included' : ' · separate game folder'}` })),
-        h('button', { class: instance.active ? 'btn btn-pink' : 'btn btn-line', text: instance.active ? 'Selected' : 'Select', disabled: busy || instance.active, onClick: () => selectInstance(instance.id) })))),
+      state.boot.instances.map(instance => instanceRow(instance, busy))),
     h('section', { class: 'card' }, h('h2', { text: 'Create a version instance' }),
       h('p', { class: 'note', text: 'Modern Minecraft releases (1.20 and newer) with Vanilla or Fabric. The matching Mojang Java runtime is installed automatically. Older legacy releases and other loaders are not available in this release.' }),
       h('form', { class: 'instance-form', onSubmit: event => { event.preventDefault(); attempt(async () => {
@@ -220,6 +225,55 @@ function instancesPage() {
       h('p', { class: 'note', role: 'status', text: library.notice })),
     h('button', { class: 'btn btn-line', text: 'Browse or import a modpack', onClick: () => go('downloads') }));
 }
+function instanceRow(instance, busy) {
+  const s = state.settings;
+  const renaming = library.renaming === instance.id;
+  const nameInput = renaming ? h('input', { class: 'inline-input', value: instance.name, maxLength: 80, 'aria-label': 'Instance name' }) : null;
+  const saveName = () => attempt(async () => { applyBootstrap(await window.petal.renameInstance(instance.id, nameInput.value)); library.renaming = null; render(); });
+  if (nameInput) {
+    nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') { library.renaming = null; render(); } });
+    setTimeout(() => { nameInput.focus(); nameInput.select(); }, 0);
+  }
+  const memChoices = [null, 2048, 3072, 4096, 6144, 8192, 12288].filter(m => m === null || m <= s.maxMemoryMb);
+  const memory = h('select', { class: 'compact', 'aria-label': `Memory for ${instance.name}`, disabled: busy, onChange: event => attempt(async () => {
+    applyBootstrap(await window.petal.setInstanceMemory(instance.id, event.target.value ? Number(event.target.value) : null)); render();
+  }) }, memChoices.map(m => h('option', { value: m ?? '', selected: (instance.memoryMb ?? null) === m, text: m ? `${m / 1024} GB memory` : `Default memory (${(s.memoryMb / 1024).toFixed(1)} GB)` })));
+  const remove = () => attempt(async () => {
+    const ok = await confirmDialog({ title: `Remove ${instance.name}?`, body: 'Its folder, including worlds, mods and screenshots, moves to the Recycle Bin. You can restore it from there.', confirm: 'Move to Recycle Bin', danger: true });
+    if (!ok) return;
+    applyBootstrap(await window.petal.removeInstance(instance.id)); toast(`${instance.name} moved to the Recycle Bin.`, 'success'); render();
+  });
+  return h('div', { class: `instance-row${instance.active ? ' active' : ''}` },
+    h('div', { class: 'instance-main' },
+      renaming ? h('div', { class: 'rename-row' }, nameInput, h('button', { class: 'btn btn-pink', text: 'Save', onClick: saveName }), h('button', { class: 'btn btn-line', text: 'Cancel', onClick: () => { library.renaming = null; render(); } }))
+        : h('h3', { text: instance.name }),
+      h('p', { class: 'note', text: `${instance.gameVersion} · ${instance.loader}${instance.pack ? ` · ${instance.pack.version}` : instance.petal ? ' · Petal HUD included' : ' · separate game folder'}` }),
+      h('p', { class: 'mono stats', text: instance.launches ? `${formatDuration(instance.playMs)} played · ${instance.launches} ${instance.launches === 1 ? 'session' : 'sessions'} · last played ${relativeTime(instance.lastPlayed)}` : 'Not played yet' }),
+      h('div', { class: 'instance-tools' }, memory,
+        h('button', { class: 'btn btn-line slim', text: 'Folder', onClick: () => attempt(() => window.petal.openInstanceFolder(instance.id)) }),
+        instance.petal ? null : h('button', { class: 'btn btn-line slim', text: 'Rename', disabled: busy || renaming, onClick: () => { library.renaming = instance.id; render(); } }),
+        instance.petal ? null : h('button', { class: 'btn btn-line slim danger', text: 'Remove', disabled: busy, onClick: remove }))),
+    h('button', { class: instance.active ? 'btn btn-pink' : 'btn btn-line', text: instance.active ? 'Selected' : 'Select', disabled: busy || instance.active, onClick: () => selectInstance(instance.id) }));
+}
+
+function formatDuration(ms) {
+  const minutes = Math.round((ms || 0) / 60000);
+  if (minutes < 1) return 'Under a minute';
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return minutes % 60 ? `${hours} h ${minutes % 60} min` : `${hours} h`;
+}
+
+function relativeTime(iso) {
+  if (!iso) return 'never';
+  const diff = Date.now() - Date.parse(iso);
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return `${Math.round(diff / 60000)} min ago`;
+  if (diff < 86400000) return `${Math.round(diff / 3600000)} h ago`;
+  if (diff < 7 * 86400000) { const d = Math.round(diff / 86400000); return d === 1 ? 'yesterday' : `${d} days ago`; }
+  return new Date(iso).toLocaleDateString();
+}
+
 const gallery = { items: [], total: 0, offset: 0, limit: 24, query: '', sort: 'newest', loading: false, loaded: false, error: '' };
 let galleryRequest = 0;
 
@@ -267,16 +321,19 @@ function screenshotsPage() {
       h('button', { class: 'btn btn-dark', text: 'Next', disabled: gallery.loading || gallery.offset + gallery.limit >= gallery.total, onClick: () => loadScreenshots(gallery.offset + gallery.limit) })) : null);
 }
 
-function toast(message) {
-  const t = $('toast');
-  t.textContent = message;
-  t.classList.remove('hidden');
-  clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => t.classList.add('hidden'), 6000);
+/** Stacked notices. kind: info | success | error. Errors stay longer and are announced right away. */
+function toast(message, kind = 'info') {
+  const host = $('toasts');
+  const el = h('div', { class: `toast ${kind}`, role: kind === 'error' ? 'alert' : 'status' },
+    h('span', { class: 'toast-text', text: message }),
+    h('button', { class: 'toast-x', 'aria-label': 'Dismiss', onClick: () => el.remove() }, icon(ICON_X)));
+  host.append(el);
+  while (host.children.length > 3) host.firstElementChild.remove();
+  setTimeout(() => el.remove(), kind === 'error' ? 9000 : 5000);
 }
 
 async function attempt(fn) {
-  try { return await fn(); } catch (err) { if (err.code !== 'cancelled') toast(err.message); return undefined; }
+  try { return await fn(); } catch (err) { if (err.code !== 'cancelled') toast(err.message, 'error'); return undefined; }
 }
 
 const activeAccount = () => state.accounts.find(a => a.active) || null;
@@ -308,6 +365,8 @@ function renderShell() {
     if (b.dataset.page === state.page) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   });
   $('page-title').textContent = TITLES[state.page];
+  $('console-dot').classList.toggle('hidden', !state.game.running);
+  $('offline').classList.toggle('hidden', navigator.onLine);
   const me = $('me');
   me.replaceChildren();
   const acc = activeAccount();
@@ -320,7 +379,7 @@ function render() {
   renderShell();
   const page = $('page');
   const scroll = page.scrollTop;
-  page.replaceChildren(({ home: homePage, mods: modsPage, instances: instancesPage, downloads: downloadsPage, locker: lockerPage, screenshots: screenshotsPage, settings: settingsPage })[state.page]());
+  page.replaceChildren(({ home: homePage, mods: modsPage, content: contentPage, instances: instancesPage, downloads: downloadsPage, locker: lockerPage, screenshots: screenshotsPage, console: consolePage, settings: settingsPage })[state.page]());
   page.scrollTop = scroll;
 }
 
@@ -381,7 +440,7 @@ function homePage() {
 
   const launchCard = h('div', { class: 'launch-card' },
     h('div', { class: 'card-top' }, h('span', { class: 'label', text: 'Instance' }),
-      h('span', { class: 'note', style: { fontSize: '13px' }, text: `${instance.loader}${instance.petal ? ' · Petal 64x' : ''}` })),
+      h('span', { class: 'note', style: { fontSize: '13px' }, text: instance.launches ? `${formatDuration(instance.playMs)} played · ${relativeTime(instance.lastPlayed)}` : `${instance.loader}${instance.petal ? ' · Petal 64x' : ''}` })),
     instancePicker,
     h('div', { class: 'launch-row' }, launchBtn,
       h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' } },
@@ -389,6 +448,10 @@ function homePage() {
         h('div', { class: 'seg mono', role: 'group', 'aria-label': 'Memory' }, memOptions.map(m =>
           h('button', { 'aria-pressed': String(s.memoryMb === m), text: `${m / 1024} GB`, onClick: () => saveSettings({ memoryMb: m }) }))))),
     busy ? h('button', { class: 'btn btn-line', text: 'Cancel', onClick: () => attempt(() => window.petal.cancelLaunch()) }) : null,
+    state.game.running ? h('div', { class: 'running-row' },
+      h('span', { class: 'live-dot', 'aria-hidden': 'true' }), h('span', { class: 'note', text: `Playing for ${formatDuration(Date.now() - Date.parse(state.game.startedAt))}` }),
+      h('button', { class: 'btn btn-line slim', text: 'Console', onClick: () => go('console') }),
+      h('button', { class: 'btn btn-line slim danger', text: 'Force stop', onClick: stopGame })) : null,
     h('div', { class: 'progress-text', text: info.text || (state.boot.modJarFound ? `Managed Java runtime · ${instance.loader} ${instance.loaderVersion || ''}${instance.pack ? ' · pack settings preserved' : ` · ${s.profile} profile`}` : 'Petal mod jar not built yet: run "npm run build:mod"') }),
     h('div', { class: 'launch-links' },
       instance.petal ? link(`Cloak: ${equipped?.name || 'No cloak'}`, 'locker') : link('Browse downloads', 'downloads'),
@@ -402,11 +465,11 @@ function homePage() {
     launchCard);
 
   const news = h('section', { 'aria-labelledby': 'new-h' },
-    h('div', { class: 'section-head' }, h('h2', { id: 'new-h', text: "What's new in 2.0" })),
+    h('div', { class: 'section-head' }, h('h2', { id: 'new-h', text: "What's new in 2.1" })),
     h('div', { class: 'news' }, [
-      ['TEXTURE PACK', '#FF9ACF', 'Petal 64x', 'Every container, button, heart and hotbar redrawn at 64x, plus the ores, tools and armour you use most.'],
-      ['IN-GAME', '#D69BFF', 'Glass mod menu', 'Right Shift opens a rounded menu with live previews and one-tap HUD editing.'],
-      ['MENUS', '#8FF5D2', 'New title and pause screens', 'A dusk title screen with your saved servers, and a pause menu that shows this session at a glance.']
+      ['CONTENT', '#FF9ACF', 'Mods and packs, per instance', 'See every mod, resource pack and shader pack, switch mods on and off, and add files without digging through folders.'],
+      ['CRASH HELP', '#D69BFF', 'Know why it closed', 'When Minecraft crashes, Petal reads the crash report and tells you what went wrong and what to try next.'],
+      ['CONSOLE', '#8FF5D2', 'Live game output', 'Watch the game log as you play, filter warnings and errors, and copy it when asking for help. Ctrl K jumps anywhere.']
     ].map(([tag, color, title, text]) => h('article', {}, h('span', { class: 'tag', style: { color }, text: tag }), h('span', { class: 'title', text: title }), h('p', { text })))));
 
   const guides = h('section', { class: 'card survival-guide' }, h('h2', { text: 'A little help for your next world' }),
@@ -416,23 +479,25 @@ function homePage() {
       ['Survival', 'Make a path home', 'Keep your bearings with coordinates, facing and portal coordinate conversions.']
     ].map(([category, title, description]) => h('div', {}, h('h3', { text: title }), h('p', { class: 'note', text: description }),
       h('button', { class: 'btn btn-line', text: `Open ${category}`, onClick: () => { state.modCat = category; go('mods'); } })))));
-  return h('div', {}, updateBanner(), hero, h('div', { class: 'grid3' }, quickJoinCard(), accountCard(), performanceCard()), instance.petal ? guides : null, news);
+  return h('div', {}, updateBanner(), crashCallout(), hero, h('div', { class: 'grid3' }, quickJoinCard(), accountCard(), performanceCard()), instance.petal ? guides : null, news);
 }
 
 function quickJoinCard() {
   const servers = state.settings.servers || [];
   const card = h('section', { class: 'card', 'aria-labelledby': 'qj' },
-    h('div', { class: 'card-head' }, h('h2', { id: 'qj', text: 'Quick join' }), h('span', { class: 'label', text: `${servers.length} saved` })));
+    h('div', { class: 'card-head' }, h('h2', { id: 'qj', text: 'Quick join' }),
+      servers.length ? h('button', { class: 'link-btn', text: 'Refresh', onClick: () => { state.serverStatus = {}; render(); } }) : h('span', { class: 'label', text: '0 saved' })));
   for (const sv of servers) {
     const st = state.serverStatus[sv.address];
-    if (!st) pingServer(sv.address);
+    if (!st || (!st.pending && Date.now() - st.at > 60000)) pingServer(sv.address);
     const initials = sv.name.split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const tile = st?.favicon ? h('img', { class: 'tile', src: st.favicon, alt: '' }) : h('div', { class: 'tile', 'aria-hidden': 'true', text: initials });
     card.append(h('div', { class: 'server' },
-      h('div', { class: 'tile', 'aria-hidden': 'true', text: initials }),
+      tile,
       h('div', { class: 'info' },
         h('span', { class: 'name', text: sv.name }),
-        h('span', { class: 'addr', text: sv.address }),
-        h('span', { class: `status${st?.online ? '' : ' off'}`, text: !st || st.pending ? 'Checking…' : st.online ? `${st.players ?? '?'} online${st.latency != null ? ` · ${st.latency} ms` : ''}` : 'Offline' })),
+        st?.motd?.length ? motdLine(st.motd) : h('span', { class: 'addr', text: sv.address }),
+        h('span', { class: `status${st?.online ? '' : ' off'}`, title: st?.detail || '', text: !st || st.pending ? 'Checking…' : st.online ? `${st.players ?? '?'}/${st.max ?? '?'} online${st.latency != null ? ` · ${st.latency} ms` : ''}${st.version ? ` · ${st.version}` : ''}` : (st.detail || 'Offline') })),
       h('div', { class: 'server-actions' },
         h('button', { class: 'btn btn-pink', text: 'Join', disabled: state.game.running || state.game.preparing || undefined, onClick: () => doLaunch(sv.address) }),
         h('button', { class: 'x', 'aria-label': `Remove ${sv.name}`, title: 'Remove', onClick: () => attempt(async () => { state.settings = await window.petal.removeServer(sv.address); render(); }) }, icon(ICON_X)))));
@@ -458,10 +523,16 @@ function quickJoinCard() {
 }
 
 async function pingServer(address) {
-  state.serverStatus[address] = { pending: true };
+  state.serverStatus[address] = { pending: true, at: Date.now() };
   const st = await window.petal.pingServer(address).catch(() => ({ online: false }));
-  state.serverStatus[address] = st;
+  state.serverStatus[address] = { ...st, at: Date.now() };
   if (state.page === 'home') render();
+}
+
+/** Server MOTD as coloured spans. Colours come from the main process as #rrggbb only; text stays textContent. */
+function motdLine(segments) {
+  return h('span', { class: 'motd' }, segments.slice(0, 40).map(seg => h('span', { text: seg.text.replace(/\n/g, ' '), style: {
+    color: /^#[0-9a-f]{6}$/i.test(seg.color || '') ? seg.color : undefined, fontWeight: seg.bold ? '700' : undefined, fontStyle: seg.italic ? 'italic' : undefined } })));
 }
 
 function accountCard() {
@@ -503,7 +574,7 @@ function performanceCard() {
 
 async function saveSettings(patch) {
   const next = await attempt(() => window.petal.setSettings(patch));
-  if (next) { state.settings = next; render(); }
+  if (next) { state.settings = next; document.body.classList.toggle('reduce-motion', Boolean(next.reduceMotion)); render(); }
 }
 
 // ---------- mods ----------
@@ -690,7 +761,20 @@ function settingsPage() {
         const result = await window.petal.repair(); toast(`Repair complete. ${result.files} files downloaded.`);
       }) }),
       state.game.preparing ? h('button', { class: 'btn btn-line', text: 'Cancel', onClick: () => attempt(() => window.petal.cancelLaunch()) }) : null),
+    javaFlagsCard(),
+    h('section', { class: 'card' }, h('h2', { text: 'Launcher' }),
+      [
+        { key: 'hideWhilePlaying', label: 'Hide the launcher while Minecraft is open', note: 'It comes back when the game closes or crashes.' },
+        { key: 'autoCheckUpdates', label: 'Check for Petal updates when the launcher opens', note: 'You can always check by hand below.' },
+        { key: 'reduceMotion', label: 'Reduce motion', note: 'Stops twinkling stars, the shine on the Play button and other animations.' }
+      ].map(t => h('div', { class: 'row tall' }, h('div', { class: 'grow' }, h('span', { text: t.label }), h('span', { class: 'note small', text: t.note })),
+        h('button', { class: 'switch', 'aria-pressed': String(Boolean(s[t.key])), 'aria-label': t.label, onClick: () => saveSettings({ [t.key]: !s[t.key] }) })))),
     accountCard(),
+    h('section', { class: 'card' }, h('h2', { text: 'Keyboard shortcuts' }),
+      h('div', { class: 'shortcut-grid' }, [
+        ['Ctrl K', 'Search pages, instances, servers and actions'], ['Ctrl Enter', 'Launch the selected instance'],
+        ['Ctrl 1 – 9', 'Jump to a page in sidebar order'], ['Esc', 'Close a dialog']
+      ].map(([keys, what]) => [h('span', { class: 'kbd', text: keys }), h('span', { class: 'note', text: what })]))),
     h('section', { class: 'card' }, h('h2', { text: 'About' }),
       h('div', { class: 'row' }, h('span', { text: 'Launcher' }), h('span', { class: 'mono', text: state.boot.version })),
       h('div', { class: 'row' },
@@ -703,10 +787,320 @@ function settingsPage() {
       h('p', { class: 'note', style: { fontSize: '13px' }, text: 'Petal Client is not an official Minecraft product and is not approved by or associated with Mojang or Microsoft.' })));
 }
 
+function javaFlagsCard() {
+  const input = h('input', { class: 'text-input mono', value: state.settings.jvmArgs || '', placeholder: '-XX:+UseZGC -Dsodium.checks.issue2561=false', spellcheck: 'false', 'aria-label': 'Extra Java flags' });
+  const status = h('p', { class: 'note', role: 'status', text: 'Only -X, -XX: and -D flags are accepted. Memory comes from the memory slider above.' });
+  const save = async () => {
+    try {
+      state.settings = await window.petal.setSettings({ jvmArgs: input.value });
+      status.textContent = state.settings.jvmArgs ? 'Saved. These flags apply from the next launch.' : 'Cleared. Petal uses its default Java flags.';
+      status.classList.remove('error');
+    } catch (err) {
+      status.textContent = err.message;
+      status.classList.add('error');
+    }
+  };
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+  return h('section', { class: 'card' }, h('h2', { text: 'Java flags' }),
+    h('p', { class: 'note', text: 'For advanced players. Petal already uses the official launcher’s tuned G1 flags; add more only if a modpack asks for them.' }),
+    h('div', { class: 'gallery-toolbar' }, input, h('button', { class: 'btn btn-pink', text: 'Save flags', onClick: save })), status);
+}
+
+// ---------- content (mods, resource packs, shader packs per instance) ----------
+const CONTENT_TYPES = { mods: 'Mods', resourcepacks: 'Resource packs', shaderpacks: 'Shader packs' };
+const contentView = { type: 'mods', data: null, loading: false, query: '', show: 'all' };
+let contentRequest = 0;
+
+async function loadContent() {
+  const request = ++contentRequest;
+  contentView.loading = true;
+  if (state.page === 'content') render();
+  try {
+    const data = await window.petal.listContent(contentView.type);
+    if (request === contentRequest) contentView.data = data;
+  } catch (err) { if (request === contentRequest) toast(err.message, 'error'); }
+  finally { if (request === contentRequest) { contentView.loading = false; if (state.page === 'content') render(); } }
+}
+
+function formatSize(bytes) {
+  if (bytes == null) return 'Folder';
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
+}
+
+function contentPage() {
+  const instance = state.boot.instance;
+  const type = contentView.type;
+  const data = contentView.data?.type === type ? contentView.data : null;
+  const running = state.game.running;
+  const enabled = (data?.items || []).filter(i => i.enabled).length;
+  const list = h('div', { class: 'content-list' });
+  const fill = () => {
+    const q = contentView.query.trim().toLowerCase();
+    const items = (data?.items || []).filter(item => (contentView.show === 'all' || (contentView.show === 'on') === item.enabled)
+      && (!q || `${item.name} ${item.file} ${item.description || ''}`.toLowerCase().includes(q)));
+    list.replaceChildren(...items.map(item => h('div', { class: `content-item${item.enabled ? '' : ' off'}` },
+      h('div', { class: 'tile', 'aria-hidden': 'true', text: item.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '?' }),
+      h('div', { class: 'grow' },
+        h('div', { class: 'content-title' }, h('span', { class: 'name', text: item.name }), item.version ? h('span', { class: 'mono ver', text: item.version }) : null,
+          h('span', { class: `badge ${item.source === 'Petal' ? 'petal' : item.source === 'Modrinth' ? 'modrinth' : ''}`, text: item.source })),
+        item.description ? h('p', { class: 'note small clamp', text: item.description }) : null,
+        h('span', { class: 'mono file', text: `${item.file} · ${formatSize(item.size)}` })),
+      type === 'mods'
+        ? h('button', { class: 'switch', 'aria-pressed': String(item.enabled), 'aria-label': `${item.name} ${item.enabled ? 'on' : 'off'}`, title: item.managed ? 'Petal needs this mod' : running ? 'Close Minecraft first' : '',
+          disabled: item.managed || running || undefined, onClick: () => attempt(async () => {
+            contentView.data = await window.petal.toggleContent(item.file, !item.enabled);
+            toast(`${item.name} ${item.enabled ? 'switched off' : 'switched on'}. Applies next launch.`, 'success');
+            render();
+          }) })
+        : null)));
+    if (!items.length) list.append(h('p', { class: 'note empty', text: contentView.loading ? 'Reading the folder…' : q ? 'Nothing matches that search.' : type === 'mods' ? 'No mods here yet. Add .jar files or find some in Downloads.' : `No ${CONTENT_TYPES[type].toLowerCase()} yet. Add .zip files or drop them in the folder.` }));
+  };
+  fill();
+  const search = h('input', { type: 'search', class: 'text-input', placeholder: `Search ${CONTENT_TYPES[type].toLowerCase()}`, value: contentView.query, 'aria-label': 'Search content' });
+  search.addEventListener('input', () => { contentView.query = search.value; fill(); });
+  return h('div', { class: 'catalog-page' },
+    h('div', { class: 'callout' }, h('span', { text: `Showing ${instance.name} · Minecraft ${instance.gameVersion} · ${instance.loader}. Changes apply the next time you launch.` })),
+    h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Content type' }, Object.entries(CONTENT_TYPES).map(([key, label]) =>
+      h('button', { role: 'tab', 'aria-selected': String(key === type), text: label, onClick: () => { contentView.type = key; contentView.query = ''; contentView.show = 'all'; loadContent(); } }))),
+    h('section', { class: 'card' },
+      h('div', { class: 'card-head' },
+        h('div', {}, h('h2', { text: CONTENT_TYPES[type] }), h('span', { class: 'mono small muted', text: data ? (type === 'mods' ? `${enabled} of ${data.items.length} on` : `${data.items.length} installed`) : '…' })),
+        h('div', { class: 'gallery-toolbar' },
+          h('button', { class: 'btn btn-pink', text: 'Add files', disabled: running && type === 'mods', onClick: () => attempt(async () => {
+            const result = await window.petal.addContent(type);
+            if (!result) return;
+            if (result.added.length) toast(`Added ${result.added.length} file${result.added.length === 1 ? '' : 's'}.`, 'success');
+            for (const skip of result.skipped.slice(0, 3)) toast(`${skip.name}: ${skip.reason}`, 'error');
+            loadContent();
+          }) }),
+          h('button', { class: 'btn btn-line', text: 'Open folder', onClick: () => attempt(() => window.petal.openContentFolder(type)) }),
+          h('button', { class: 'btn btn-dark', text: 'Refresh', disabled: contentView.loading, onClick: loadContent }))),
+      h('div', { class: 'gallery-toolbar content-toolbar' }, search,
+        type === 'mods' ? h('div', { class: 'seg', role: 'group', 'aria-label': 'Show' }, [['all', 'All'], ['on', 'On'], ['off', 'Off']].map(([key, label]) =>
+          h('button', { 'aria-pressed': String(contentView.show === key), text: label, onClick: () => { contentView.show = key; render(); } }))) : null),
+      running && type === 'mods' ? h('p', { class: 'note', text: 'Minecraft is running. Close it to switch mods on or off.' }) : null,
+      list),
+    type === 'mods' && instance.loader === 'fabric' ? h('button', { class: 'btn btn-line', text: 'Find more mods on Modrinth', onClick: () => { discover.type = 'mod'; go('downloads'); } }) : null);
+}
+
+// ---------- console ----------
+const consoleView = { lines: [], filter: 'all', query: '', follow: true };
+function lineLevel(line) {
+  if (/\b(ERROR|FATAL|SEVERE)\b|Exception|^\s+at /.test(line)) return 'error';
+  if (/\bWARN(ING)?\b/.test(line)) return 'warn';
+  return 'info';
+}
+function lineVisible(line) {
+  const level = lineLevel(line);
+  if (consoleView.filter === 'warn' && level === 'info') return false;
+  if (consoleView.filter === 'error' && level !== 'error') return false;
+  return !consoleView.query || line.toLowerCase().includes(consoleView.query.toLowerCase());
+}
+function consoleRow(line) { return h('div', { class: `log-line ${lineLevel(line)}`, text: line }); }
+
+function consolePage() {
+  const box = h('div', { class: 'console-lines', id: 'console-lines', role: 'log', tabindex: '0', 'aria-label': 'Minecraft output' });
+  const shown = consoleView.lines.filter(lineVisible).slice(-2000);
+  box.append(...shown.map(consoleRow));
+  if (!consoleView.lines.length) box.append(h('p', { class: 'note empty', text: 'Minecraft output shows up here while the game runs. Launch from the Play page.' }));
+  box.addEventListener('scroll', () => {
+    const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+    if (atBottom !== consoleView.follow) { consoleView.follow = atBottom; const f = $('console-follow'); if (f) f.setAttribute('aria-pressed', String(atBottom)); }
+  });
+  setTimeout(() => { if (consoleView.follow) box.scrollTop = box.scrollHeight; }, 0);
+  const search = h('input', { type: 'search', class: 'text-input', placeholder: 'Filter lines', value: consoleView.query, 'aria-label': 'Filter lines' });
+  search.addEventListener('input', () => {
+    consoleView.query = search.value;
+    box.replaceChildren(...consoleView.lines.filter(lineVisible).slice(-2000).map(consoleRow));
+    if (consoleView.follow) box.scrollTop = box.scrollHeight;
+  });
+  const counts = consoleView.lines.reduce((c, l) => { c[lineLevel(l)]++; return c; }, { info: 0, warn: 0, error: 0 });
+  return h('div', { class: 'console-page' },
+    h('div', { class: 'console-bar' },
+      h('div', { class: 'console-state' }, h('span', { class: `live-dot${state.game.running ? '' : ' idle'}`, 'aria-hidden': 'true' }),
+        h('span', { text: state.game.running ? `Minecraft running · ${formatDuration(Date.now() - Date.parse(state.game.startedAt))}` : state.game.preparing ? 'Starting…' : 'Minecraft is not running' })),
+      h('div', { class: 'seg', role: 'group', 'aria-label': 'Level' }, [['all', `All ${consoleView.lines.length}`], ['warn', `Warnings ${counts.warn + counts.error}`], ['error', `Errors ${counts.error}`]].map(([key, label]) =>
+        h('button', { 'aria-pressed': String(consoleView.filter === key), text: label, onClick: () => { consoleView.filter = key; render(); } }))),
+      search,
+      h('button', { class: 'btn btn-line slim', id: 'console-follow', 'aria-pressed': String(consoleView.follow), text: 'Follow', onClick: () => { consoleView.follow = true; box.scrollTop = box.scrollHeight; $('console-follow').setAttribute('aria-pressed', 'true'); } }),
+      h('button', { class: 'btn btn-line slim', text: 'Copy', disabled: !consoleView.lines.length, onClick: () => attempt(async () => { await window.petal.copyLog(consoleView.lines.filter(lineVisible)); toast('Copied to clipboard', 'success'); }) }),
+      h('button', { class: 'btn btn-line slim', text: 'Open log file', onClick: () => attempt(() => window.petal.openLog()) }),
+      state.game.running ? h('button', { class: 'btn btn-line slim danger', text: 'Force stop', onClick: stopGame }) : null,
+      state.lastCrash ? h('button', { class: 'btn btn-dark slim', text: 'Crash details', onClick: () => showCrash(state.lastCrash) }) : null),
+    box);
+}
+
+function appendLog(batch) {
+  consoleView.lines.push(...batch);
+  const overflow = consoleView.lines.length - 5000;
+  if (overflow > 0) consoleView.lines.splice(0, overflow);
+  if (state.page !== 'console') return;
+  const box = $('console-lines');
+  if (!box) return;
+  box.querySelector('.empty')?.remove();
+  box.append(...batch.filter(lineVisible).map(consoleRow));
+  while (box.childElementCount > 2000) box.firstElementChild.remove();
+  if (consoleView.follow) box.scrollTop = box.scrollHeight;
+}
+
+async function stopGame() {
+  const ok = await confirmDialog({ title: 'Force stop Minecraft?', body: 'Unsaved progress since the last autosave may be lost. Use this only when the game is frozen.', confirm: 'Force stop', danger: true });
+  if (ok) await attempt(() => window.petal.stopGame());
+}
+
+// ---------- dialogs ----------
+let sheetClose = null;
+function openSheet(content, { wide = false, onClose } = {}) {
+  const sheet = $('sheet');
+  const body = $('sheet-body');
+  body.className = `dialog${wide ? ' wide' : ''}`;
+  body.replaceChildren(content);
+  sheet.classList.remove('hidden');
+  sheetClose = onClose || null;
+  const focusable = body.querySelector('button.btn-pink, button, input');
+  setTimeout(() => focusable?.focus(), 0);
+}
+function closeSheet(result) {
+  if ($('sheet').classList.contains('hidden')) return;
+  $('sheet').classList.add('hidden');
+  $('sheet-body').replaceChildren();
+  const done = sheetClose;
+  sheetClose = null;
+  done?.(result);
+}
+$('sheet').addEventListener('mousedown', e => { if (e.target === $('sheet')) closeSheet(false); });
+
+function confirmDialog({ title, body, confirm = 'Continue', danger = false }) {
+  return new Promise(resolve => {
+    openSheet(h('div', { class: 'sheet-stack' },
+      h('h2', { text: title }), h('p', { class: 'note', text: body }),
+      h('div', { class: 'dialog-actions' },
+        h('button', { class: `btn ${danger ? 'btn-danger' : 'btn-pink'}`, text: confirm, onClick: () => closeSheet(true) }),
+        h('button', { class: 'btn btn-line', text: 'Cancel', onClick: () => closeSheet(false) }))), { onClose: resolve });
+  });
+}
+
+function showCrash(c) {
+  state.crashSeen = true;
+  const fix = { memory: ['Change memory', () => go('settings')], content: ['Open Content', () => go('content')], repair: ['Repair game files', () => go('settings')] }[c.action];
+  openSheet(h('div', { class: 'sheet-stack crash' },
+    h('span', { class: 'eyebrow danger-text', text: c.exitCode != null ? `Crashed · exit code ${c.exitCode}` : 'Crashed' }),
+    h('h2', { text: c.title }),
+    h('p', { class: 'note', text: c.explain }),
+    c.detail ? h('pre', { class: 'log-excerpt', text: c.detail }) : null,
+    h('div', {}, h('span', { class: 'label', text: 'Try this' }), h('ol', { class: 'fixes' }, c.fixes.map(f => h('li', { text: f })))),
+    c.excerpt ? h('details', {}, h('summary', { text: c.report ? `From ${c.report}` : 'Last log lines' }), h('pre', { class: 'log-excerpt', text: c.excerpt })) : null,
+    h('div', { class: 'dialog-actions' },
+      h('button', { class: 'btn btn-pink', text: 'Launch again', disabled: state.game.running || state.game.preparing, onClick: () => { closeSheet(); doLaunch(); } }),
+      fix ? h('button', { class: 'btn btn-dark', text: fix[0], onClick: () => { closeSheet(); fix[1](); } }) : null,
+      h('button', { class: 'btn btn-line', text: 'Copy details', onClick: () => attempt(async () => { await window.petal.copyCrash(); toast('Crash details copied. Paste them when asking for help.', 'success'); }) }),
+      c.report ? h('button', { class: 'btn btn-line', text: 'Open crash report', onClick: () => attempt(() => window.petal.openCrashReport(c.report)) }) : null,
+      c.nativeLog && !c.report ? h('button', { class: 'btn btn-line', text: 'Open Java error log', onClick: () => attempt(() => window.petal.openCrashReport(c.nativeLog)) }) : null,
+      h('button', { class: 'btn btn-line', text: 'Console', onClick: () => { closeSheet(); go('console'); } }))), { wide: true });
+}
+
+function crashCallout() {
+  const c = state.lastCrash;
+  if (!c) return null;
+  return h('section', { class: 'crash-callout', role: 'status' },
+    h('div', { class: 'grow' }, h('span', { class: 'eyebrow danger-text', text: 'Last session crashed' }), h('span', { class: 'title', text: c.title })),
+    h('button', { class: 'btn btn-line', text: 'Details', onClick: () => showCrash(c) }),
+    h('button', { class: 'x', 'aria-label': 'Dismiss', onClick: () => { state.lastCrash = null; render(); } }, icon(ICON_X)));
+}
+
+/** Release notes as plain elements: headings, bullets and paragraphs. Never parsed as HTML. */
+function releaseNotes(text) {
+  const out = [];
+  let list = null;
+  for (const raw of String(text || '').split(/\r?\n/).slice(0, 80)) {
+    const line = raw.replace(/\*\*|__|`/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim();
+    if (!line) { list = null; continue; }
+    if (/^#{1,6}\s/.test(line)) { list = null; out.push(h('h3', { text: line.replace(/^#+\s*/, '') })); }
+    else if (/^[-*+]\s/.test(line)) { if (!list) { list = h('ul', {}); out.push(list); } list.append(h('li', { text: line.slice(2) })); }
+    else { list = null; out.push(h('p', { text: line })); }
+  }
+  return h('div', { class: 'release-notes' }, out.length ? out : h('p', { class: 'note', text: 'No notes were published with this release.' }));
+}
+
+function maybeShowWhatsNew(u) {
+  const current = state.boot?.version;
+  if (!u || !current || u.version !== current || state.settings.lastSeenVersion === current) return;
+  window.petal.setSettings({ lastSeenVersion: current }).then(next => { state.settings = next; }).catch(() => {});
+  if (!u.notes) return;
+  openSheet(h('div', { class: 'sheet-stack' },
+    h('span', { class: 'eyebrow', text: 'Updated' }), h('h2', { text: `Welcome to Petal ${current}` }), releaseNotes(u.notes),
+    h('div', { class: 'dialog-actions' }, h('button', { class: 'btn btn-pink', text: 'Let’s play', onClick: () => closeSheet() }),
+      u.page ? h('button', { class: 'btn btn-line', text: 'Release page', onClick: () => attempt(() => window.petal.openRelease()) }) : null)), { wide: true });
+}
+
+// ---------- command palette ----------
+const palette = { items: [], index: 0 };
+function paletteEntries() {
+  const busy = state.game.running || state.game.preparing;
+  const entries = PAGES.map((page, i) => ({ group: 'Go to', label: TITLES[page], hint: `Ctrl ${i + 1}`, run: () => go(page) }));
+  if (!busy) entries.unshift({ group: 'Action', label: `Launch ${state.boot.instance.name}`, hint: 'Ctrl Enter', run: () => doLaunch() });
+  if (state.game.running) entries.unshift({ group: 'Action', label: 'Force stop Minecraft', run: stopGame });
+  for (const item of state.boot.instances) if (!item.active && !busy) entries.push({ group: 'Instance', label: `Switch to ${item.name}`, hint: `${item.gameVersion} ${item.loader}`, run: () => selectInstance(item.id) });
+  for (const sv of state.settings.servers || []) if (!busy) entries.push({ group: 'Server', label: `Join ${sv.name}`, hint: sv.address, run: () => doLaunch(sv.address) });
+  entries.push(
+    { group: 'Action', label: 'Add mods to this instance', run: () => { contentView.type = 'mods'; go('content'); attempt(async () => { const r = await window.petal.addContent('mods'); if (r) loadContent(); }); } },
+    { group: 'Action', label: 'Open game folder', run: () => attempt(() => window.petal.openInstanceFolder()) },
+    { group: 'Action', label: 'Open last game log', run: () => attempt(() => window.petal.openLog()) },
+    { group: 'Action', label: 'Check for updates', run: checkForUpdates },
+    { group: 'Action', label: 'Add a Microsoft account', run: startSignIn });
+  if (state.lastCrash) entries.push({ group: 'Action', label: 'Show last crash', run: () => showCrash(state.lastCrash) });
+  return entries;
+}
+function openPalette() {
+  if (!state.boot) return;
+  $('palette').classList.remove('hidden');
+  const input = $('palette-input');
+  input.value = '';
+  fillPalette();
+  input.focus();
+}
+function closePalette() { $('palette').classList.add('hidden'); }
+function fillPalette() {
+  const q = $('palette-input').value.trim().toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
+  palette.items = paletteEntries().filter(e => words.every(w => `${e.group} ${e.label} ${e.hint || ''}`.toLowerCase().includes(w))).slice(0, 40);
+  palette.index = 0;
+  drawPalette();
+}
+function drawPalette() {
+  const list = $('palette-list');
+  list.replaceChildren(...palette.items.map((e, i) => h('button', { class: 'palette-item', role: 'option', 'aria-selected': String(i === palette.index), onMouseenter: () => { palette.index = i; drawPalette(); }, onClick: () => runPalette(i) },
+    h('span', { class: 'label', text: e.group }), h('span', { class: 'grow', text: e.label }), e.hint ? h('span', { class: 'mono hint', text: e.hint }) : null)));
+  if (!palette.items.length) list.append(h('p', { class: 'note empty', text: 'Nothing matches.' }));
+  list.children[palette.index]?.scrollIntoView({ block: 'nearest' });
+}
+function runPalette(i) { const e = palette.items[i]; closePalette(); e?.run(); }
+$('palette-input').addEventListener('input', fillPalette);
+$('palette-input').addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); palette.index = Math.min(palette.items.length - 1, palette.index + 1); drawPalette(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); palette.index = Math.max(0, palette.index - 1); drawPalette(); }
+  else if (e.key === 'Enter') { e.preventDefault(); runPalette(palette.index); }
+});
+$('palette').addEventListener('mousedown', e => { if (e.target === $('palette')) closePalette(); });
+$('palette-open').addEventListener('click', openPalette);
+
+document.addEventListener('keydown', e => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (e.key === 'Escape') {
+    if (!$('palette').classList.contains('hidden')) return closePalette();
+    if (!$('sheet').classList.contains('hidden')) return closeSheet(false);
+  }
+  if (mod && e.key.toLowerCase() === 'k') { e.preventDefault(); return $('palette').classList.contains('hidden') ? openPalette() : closePalette(); }
+  if (!state.boot || !$('palette').classList.contains('hidden') || !$('sheet').classList.contains('hidden') || !$('signin').classList.contains('hidden')) return;
+  if (mod && e.key === 'Enter') { e.preventDefault(); doLaunch(); return; }
+  if (mod && /^[1-9]$/.test(e.key) && PAGES[Number(e.key) - 1]) { e.preventDefault(); go(PAGES[Number(e.key) - 1]); }
+});
+
 // ---------- sign-in ----------
 async function startSignIn() {
   const accounts = await attempt(() => window.petal.signIn());
-  if (accounts) { state.accounts = accounts; toast(`Signed in as ${activeAccount()?.name}`); render(); }
+  if (accounts) { state.accounts = accounts; toast(`Signed in as ${activeAccount()?.name}`, 'success'); render(); }
 }
 
 window.petal.onSignInPrompt(prompt => {
@@ -729,27 +1123,50 @@ async function refreshModules() {
   }
 }
 window.addEventListener('focus', refreshModules);
-function go(page) { state.page = page; render(); $('page').scrollTop = 0; if (page === 'screenshots') loadScreenshots(); if (page === 'mods') refreshModules(); if (page === 'downloads') refreshInstalled(); }
+function go(page) {
+  state.page = page; render(); $('page').scrollTop = 0;
+  if (page === 'screenshots') loadScreenshots();
+  if (page === 'mods') refreshModules();
+  if (page === 'downloads') refreshInstalled();
+  if (page === 'content') loadContent();
+}
 document.querySelectorAll('.nav button').forEach(b => b.addEventListener('click', () => go(b.dataset.page)));
 $('me').addEventListener('click', () => (activeAccount() ? go('settings') : startSignIn()));
 $('win-min').addEventListener('click', () => window.petal.minimize());
+$('win-max').addEventListener('click', () => window.petal.maximize());
+document.querySelector('.topbar').addEventListener('dblclick', e => { if (e.target.closest('button, input, select')) return; window.petal.maximize(); });
 $('win-close').addEventListener('click', () => window.petal.close());
 
 let progressFrame = 0;
 window.petal.onProgress(p => {
   state.progress = p;
-  if (!['home', 'settings', 'downloads', 'instances'].includes(state.page) || progressFrame) return;
+  if (!['home', 'settings', 'downloads', 'instances', 'content'].includes(state.page) || progressFrame) return;
   progressFrame = requestAnimationFrame(() => { progressFrame = 0; render(); });
 });
 window.petal.onGameState(g => {
   const wasRunning = state.game.running;
   state.game = g;
   if (!g.preparing && !g.running) state.progress = null;
-  if (wasRunning && !g.running && g.crashed) toast(`Minecraft closed unexpectedly${g.exitCode != null ? ` (code ${g.exitCode})` : ''}. Open Settings › Open last game log for details.`);
+  if (wasRunning && !g.running) {
+    // Play time changed; refresh instance stats quietly.
+    window.petal.bootstrap().then(boot => { applyBootstrap(boot); render(); }).catch(() => {});
+    if (g.crashed) {
+      state.lastCrash = g.crash || { title: 'Minecraft closed unexpectedly', explain: 'Open the console for the last lines Minecraft printed.', fixes: ['Try launching again.'], exitCode: g.exitCode, excerpt: '' };
+      showCrash(state.lastCrash);
+    }
+  }
+  // While playing, refresh the Play page once a minute so the session timer moves.
+  clearInterval(window.playTimer);
+  if (g.running) window.playTimer = setInterval(() => { if (['home', 'console'].includes(state.page) && $('sheet').classList.contains('hidden')) render(); }, 60000);
   render();
 });
+window.petal.onGameLog(appendLog);
+window.petal.onGameLogReset(() => { consoleView.lines = []; if (state.page === 'console') render(); });
+window.petal.onMaximized(max => { state.maximized = max; $('win-max').setAttribute('aria-label', max ? 'Restore' : 'Maximize'); });
+window.addEventListener('online', renderShell);
+window.addEventListener('offline', renderShell);
 window.petal.onAccounts(list => { state.accounts = list; renderShell(); });
-window.petal.onUpdate(st => { state.update = st; if (['home', 'settings'].includes(state.page)) render(); });
+window.petal.onUpdate(st => { state.update = st; maybeShowWhatsNew(st); if (['home', 'settings'].includes(state.page)) render(); });
 let updateFrame = 0;
 window.petal.onUpdateProgress(p => {
   state.updateProgress = p;
@@ -761,4 +1178,7 @@ window.petal.onUpdateProgress(p => {
   const boot = await window.petal.bootstrap();
   applyBootstrap(boot);
   render();
-})().catch(err => toast(`Petal could not start: ${err.message}`));
+  // Pick up output from a game that was already running when the window reloaded.
+  const lines = await window.petal.gameLog().catch(() => []);
+  if (lines.length) appendLog(lines);
+})().catch(err => toast(`Petal could not start: ${err.message}`, 'error'));

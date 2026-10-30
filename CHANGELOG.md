@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.1.0 (unreleased)
+
+- Add a Content page for each instance: every mod, resource pack and shader pack with name, version and source (Petal, Modrinth or added by you). Switch mods on and off, add files, open folders. Petal's own mods are protected.
+- Add crash help: when Minecraft crashes, Petal reads this session's crash report and output, explains known causes (out of memory, missing or incompatible mods, mixin failures, wrong Java, graphics drivers, native crashes, damaged files) and offers the fix, Copy details, Open crash report and Launch again.
+- Add a live Console page: streamed game output with warning and error filters, search, follow, copy, open log file and Force stop.
+- Add Ctrl K search for pages, instances, servers and actions, plus Ctrl Enter to launch and Ctrl 1–9 for pages.
+- Instances: play time, session count and last played; per-instance memory; rename; remove (folder goes to the Recycle Bin); open folder.
+- Quick join shows server icons, coloured MOTD, version and player counts, refreshing every minute.
+- Settings: validated extra Java flags (-X, -XX:, -D only), update check at startup toggle, Reduce motion; keyboard shortcut list.
+- Remember window size, position and maximized state; add a maximize button and double-click title bar.
+- Stacked, dismissible notices; an offline indicator; "Welcome to 2.x" release notes after an update.
+
 ## 2.0.0 (2026-10-30)
 
 - Rebuild the Right Shift mod menu in the 2.0 glass look: category pills, mod tiles with Options and Enabled buttons, rounded settings panel.

@@ -22,7 +22,7 @@
     { "slug": "betterf3", "name": "BetterF3", "category": "Information" },
     { "slug": "shulkerboxtooltip", "name": "Shulker Box Tooltip", "category": "Information" },
     { "slug": "minihud", "name": "MiniHUD", "category": "Information", "off": true, "note": "Overlaps Petal's Coordinates and Local Light modules." },
-    { "slug": "durability-viewer", "name": "Durability Viewer", "category": "Information", "off": true, "note": "Overlaps Petal's Tools & Supplies module." },
+    { "slug": "durability-viewer", "alts": ["durability-viewer-updated"], "name": "Durability Viewer", "category": "Information", "off": true, "note": "Overlaps Petal's Tools & Supplies module." },
     { "slug": "light-overlay", "name": "Light Overlay", "category": "Information", "off": true, "note": "Overlaps Petal's Local Light module." },
 
     { "slug": "distanthorizons", "name": "Distant Horizons", "category": "Visuals", "off": true, "note": "Heavy: give the game 6 GB or more before turning it on." },
@@ -56,7 +56,7 @@
     { "slug": "presence-footsteps", "name": "Presence Footsteps", "category": "Audio" },
     { "slug": "sound-physics-remastered", "name": "Sound Physics Remastered", "category": "Audio" },
     { "slug": "ambientsounds", "name": "AmbientSounds", "category": "Audio" },
-    { "slug": "drip-sounds", "name": "Drip Sounds", "category": "Audio" }
+    { "slug": "dripsounds", "name": "Drip Sounds", "category": "Audio" }
   ],
   "skipped": [
     { "name": "Indium", "reason": "Sodium 0.6 and newer include the Fabric Rendering API, so Indium is no longer needed." },

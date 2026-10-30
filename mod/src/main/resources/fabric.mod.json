@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "petal",
+  "version": "${version}",
+  "name": "Petal Client",
+  "description": "SMP survival and building client: crop care, tools and supplies, local lighting, portal coordinates, draggable HUD and cosmetics.",
+  "authors": [
+    "Petal Client"
+  ],
+  "license": "All-Rights-Reserved",
+  "icon": "assets/petal/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.petal.client.PetalClient"
+    ]
+  },
+  "mixins": [
+    "petal.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.17.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

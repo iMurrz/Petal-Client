@@ -1,0 +1,76 @@
+{
+  "name": "petal-client",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Petal Client: an SMP survival, building and farming Minecraft launcher",
+  "author": "Petal Client",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:mod": "node scripts/build-mod.js",
+    "check": "node scripts/check.js",
+    "dist:win": "npm run build:mod && electron-builder --win nsis --x64 --publish never",
+    "dist:dir": "npm run build:mod && electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "^44.10.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "dev.petal.launcher",
+    "productName": "Petal Client",
+    "copyright": "Petal Client. Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../mod/build/libs",
+        "to": "mods",
+        "filter": [
+          "petal-client-*.jar",
+          "!*-sources.jar",
+          "!*-dev.jar"
+        ]
+      },
+      {
+        "from": "launchwrapper/build",
+        "to": "launchwrapper",
+        "filter": [
+          "petal-launchwrapper.jar"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false,
+      "shortcutName": "Petal Client",
+      "artifactName": "Petal-Client-Setup-${version}.${ext}"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "iMurrz",
+        "repo": "Petal-Client",
+        "releaseType": "release"
+      }
+    ]
+  }
+}

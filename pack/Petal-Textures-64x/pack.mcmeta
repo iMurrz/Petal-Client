@@ -1,0 +1,7 @@
+{
+  "pack": {
+    "pack_format": 75,
+    "supported_formats": {"min_inclusive": 64, "max_inclusive": 75},
+    "description": "§dPetal Textures 64x §8| §7Original blocks and items\n§8Optional — use Faithful 64x instead if you prefer"
+  }
+}

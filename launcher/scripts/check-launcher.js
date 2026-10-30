@@ -12,6 +12,7 @@ const content = require('../src/lib/content');
 const { Instances } = require('../src/lib/instances');
 const { Settings, parseJvmArgs } = require('../src/lib/settings');
 const { buildLaunchArgs } = require('../src/lib/game/launch');
+const pack = require('../src/lib/pack');
 
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'petal-check-'));
 const results = [];
@@ -83,7 +84,7 @@ function zipWith(name, text) {
     assert.ok(fs.existsSync(path.join(mods, 'sodium-0.6.jar.disabled')));
     listed = await content.setEnabled(dir, 'sodium-0.6.jar.disabled', true);
     assert.ok(fs.existsSync(path.join(mods, 'sodium-0.6.jar')));
-    await assert.rejects(content.setEnabled(dir, 'petal-client-2.1.0.jar', false), /Petal needs this mod/);
+    await assert.rejects(content.setEnabled(dir, 'petal-client-2.1.0.jar', false), /Petal installs this mod/);
     await assert.rejects(content.setEnabled(dir, '../escape.jar', false));
     fs.writeFileSync(path.join(temp, 'pack.zip'), 'zip');
     fs.writeFileSync(path.join(temp, 'evil.exe'), 'no');
@@ -140,6 +141,35 @@ function zipWith(name, text) {
     const args = buildLaunchArgs(plan, { session: { name: 'Steve', uuid: 'u', accessToken: 't' }, memoryMb: 4096, extraJvmArgs: ['-XX:+UseZGC'], clientId: 'c' });
     assert.ok(args.indexOf('-XX:+UseZGC') > args.indexOf('-Xmx4096M'));
     assert.ok(args.indexOf('-XX:+UseZGC') < args.indexOf('Main'));
+  });
+
+  await check('pack: choices, defaults and libraries', async () => {
+    const file = size => ({ url: 'https://cdn.modrinth.com/x.jar', filename: 'x.jar', sha512: 'a'.repeat(128), size });
+    const lock = { gameVersion: '1.21.11', mods: [
+      { slug: 'fabric-api', name: 'Fabric API', category: 'required', defaultEnabled: true, file: file(1), dependencies: [] },
+      { slug: 'sodium', name: 'Sodium', category: 'Performance', defaultEnabled: true, file: file(10), dependencies: [] },
+      { slug: 'iris', name: 'Iris', category: 'Performance', defaultEnabled: true, file: file(20), dependencies: ['sodium'] },
+      { slug: 'tweakeroo', name: 'Tweakeroo', category: 'Building', defaultEnabled: false, file: file(30), dependencies: ['malilib'] },
+      { slug: 'malilib', name: 'MaLiLib', category: 'library', defaultEnabled: false, file: file(40), dependencies: [] }
+    ] };
+    const dir = path.join(temp, 'pack-instance');
+    let view = pack.list(dir, lock);
+    assert.deepEqual(view.mods.filter(m => m.enabled).map(m => m.slug), ['sodium', 'iris']);
+    assert.equal(view.downloadBytes, 31);
+    view = await pack.set(dir, 'sodium', false, lock);
+    const sodium = view.mods.find(m => m.slug === 'sodium');
+    assert.equal(sodium.enabled, true, 'Iris keeps Sodium installed');
+    assert.deepEqual(sodium.neededBy, ['Iris']);
+    view = await pack.set(dir, 'iris', false, lock);
+    assert.equal(view.mods.find(m => m.slug === 'sodium').enabled, false);
+    view = await pack.set(dir, 'tweakeroo', true, lock);
+    assert.deepEqual(view.libraries, ['MaLiLib']);
+    assert.ok(pack.resolve(pack.readChoices(dir), lock).install.has('malilib'));
+    await assert.rejects(pack.set(dir, 'malilib', true, lock));
+    await assert.rejects(pack.set(dir, 'fabric-api', false, lock));
+    view = await pack.reset(dir, lock);
+    assert.equal(view.customized, false);
+    assert.deepEqual(pack.readChoices(dir), {});
   });
 
   fs.rmSync(temp, { recursive: true, force: true });

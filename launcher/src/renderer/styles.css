@@ -493,3 +493,8 @@ details summary { cursor: pointer; color: var(--muted); font-size: 14px; }
 /* reduced motion: setting or OS preference */
 body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* Petal Pack */
+.pack-groups { display: flex; flex-direction: column; gap: 18px; }
+.pack-group { display: flex; flex-direction: column; gap: 8px; }
+.pack-note { color: var(--blush); }

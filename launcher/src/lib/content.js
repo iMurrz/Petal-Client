@@ -99,7 +99,7 @@ async function list(instanceDir, type) {
 async function setEnabled(instanceDir, file, enabled) {
   const dir = path.join(instanceDir, 'mods');
   safeName(file);
-  if ((await managedSet(dir)).has(file)) throw new Error('Petal needs this mod. It is switched on automatically every launch.');
+  if ((await managedSet(dir)).has(file)) throw new Error('Petal installs this mod. Switch Petal Pack mods on or off from the Petal Pack tab.');
   const from = path.join(dir, file);
   if (!fs.existsSync(from)) throw new Error('That mod is no longer in the folder.');
   const disabled = DISABLED.exec(file);

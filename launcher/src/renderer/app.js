@@ -807,8 +807,9 @@ function javaFlagsCard() {
 }
 
 // ---------- content (mods, resource packs, shader packs per instance) ----------
-const CONTENT_TYPES = { mods: 'Mods', resourcepacks: 'Resource packs', shaderpacks: 'Shader packs' };
-const contentView = { type: 'mods', data: null, loading: false, query: '', show: 'all' };
+const CONTENT_TYPES = { pack: 'Petal Pack', mods: 'Mods', resourcepacks: 'Resource packs', shaderpacks: 'Shader packs' };
+const contentView = { type: 'pack', data: null, loading: false, query: '', show: 'all' };
+const contentTypes = () => Object.keys(CONTENT_TYPES).filter(key => key !== 'pack' || state.boot.instance.petal);
 let contentRequest = 0;
 
 async function loadContent() {
@@ -816,7 +817,8 @@ async function loadContent() {
   contentView.loading = true;
   if (state.page === 'content') render();
   try {
-    const data = await window.petal.listContent(contentView.type);
+    if (!contentTypes().includes(contentView.type)) contentView.type = 'mods';
+    const data = contentView.type === 'pack' ? { type: 'pack', ...(await window.petal.packList()) } : await window.petal.listContent(contentView.type);
     if (request === contentRequest) contentView.data = data;
   } catch (err) { if (request === contentRequest) toast(err.message, 'error'); }
   finally { if (request === contentRequest) { contentView.loading = false; if (state.page === 'content') render(); } }
@@ -828,8 +830,59 @@ function formatSize(bytes) {
   return `${(bytes / 1048576).toFixed(1)} MB`;
 }
 
+function packView(data) {
+  const running = state.game.running || state.game.preparing;
+  const on = data.mods.filter(m => m.enabled).length;
+  const q = contentView.query.trim().toLowerCase();
+  const groups = h('div', { class: 'pack-groups' });
+  const fill = () => {
+    const shown = data.mods.filter(m => (contentView.show === 'all' || (contentView.show === 'on') === m.enabled) && (!q || `${m.name} ${m.description} ${m.category}`.toLowerCase().includes(contentView.query.trim().toLowerCase())));
+    groups.replaceChildren(...[...new Set(shown.map(m => m.category))].map(category => h('section', { class: 'pack-group' },
+      h('span', { class: 'label', text: category }),
+      h('div', { class: 'content-list' }, shown.filter(m => m.category === category).map(m => {
+        const locked = !m.chosen && m.neededBy.length > 0;
+        return h('div', { class: `content-item${m.enabled ? '' : ' off'}` },
+          h('div', { class: 'tile', 'aria-hidden': 'true', text: m.name.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() }),
+          h('div', { class: 'grow' },
+            h('div', { class: 'content-title' }, h('span', { class: 'name', text: m.name }), h('span', { class: 'mono ver', text: m.version }),
+              !m.defaultEnabled ? h('span', { class: 'badge', text: 'Starts off' }) : null,
+              locked ? h('span', { class: 'badge modrinth', text: `Needed by ${m.neededBy.join(', ')}` }) : null,
+              m.conflicts.length ? h('span', { class: 'badge petal', text: `Conflicts with ${m.conflicts.join(', ')}` }) : null),
+            h('p', { class: 'note small clamp', text: m.description }),
+            m.note ? h('p', { class: 'note small pack-note', text: m.note }) : null),
+          h('button', { class: 'switch', 'aria-pressed': String(m.enabled), 'aria-label': `${m.name} ${m.enabled ? 'on' : 'off'}`, disabled: running || locked || undefined,
+            title: locked ? `Stays on while ${m.neededBy.join(', ')} is on` : running ? 'Close Minecraft first' : '',
+            onClick: () => attempt(async () => {
+              contentView.data = { type: 'pack', ...(await window.petal.packSet(m.slug, !m.enabled)) };
+              toast(`${m.name} ${m.enabled ? 'switched off' : 'switched on'}. Petal ${m.enabled ? 'removes' : 'downloads'} it next launch.`, 'success');
+              render();
+            }) }));
+      })))));
+    if (!groups.childElementCount) groups.append(h('p', { class: 'note empty', text: 'Nothing matches that search.' }));
+  };
+  fill();
+  const search = h('input', { type: 'search', class: 'text-input', placeholder: 'Search the Petal Pack', value: contentView.query, 'aria-label': 'Search the Petal Pack' });
+  search.addEventListener('input', () => { contentView.query = search.value; fill(); });
+  return h('section', { class: 'card' },
+    h('div', { class: 'card-head' },
+      h('div', {}, h('h2', { text: 'Petal Pack' }), h('span', { class: 'mono small muted', text: `${on} of ${data.mods.length} on · ${formatSize(data.downloadBytes)} with libraries · Minecraft ${data.gameVersion}` })),
+      h('div', { class: 'gallery-toolbar' },
+        data.customized ? h('button', { class: 'btn btn-line', text: 'Reset to Petal defaults', disabled: running, onClick: () => attempt(async () => { contentView.data = { type: 'pack', ...(await window.petal.packReset()) }; render(); }) }) : null)),
+    h('p', { class: 'note', text: 'Hand-picked SMP mods, pinned to exact builds and checked before every launch. Switch any of them off; Petal adds or removes the files the next time you play. Mods that some servers ban start off.' }),
+    data.mods.length ? null : h('p', { class: 'note', text: 'This build of Petal has no pack mods pinned yet.' }),
+    h('div', { class: 'gallery-toolbar content-toolbar' }, search,
+      h('div', { class: 'seg', role: 'group', 'aria-label': 'Show' }, [['all', 'All'], ['on', 'On'], ['off', 'Off']].map(([key, label]) =>
+        h('button', { 'aria-pressed': String(contentView.show === key), text: label, onClick: () => { contentView.show = key; render(); } })))),
+    running ? h('p', { class: 'note', text: 'Close Minecraft to change the pack.' }) : null,
+    groups,
+    data.libraries.length ? h('p', { class: 'note small', text: `Libraries installed for these mods: ${data.libraries.join(', ')}.` }) : null,
+    data.unavailable.length || data.skipped.length ? h('details', {}, h('summary', { text: `Not in the pack (${data.unavailable.length + data.skipped.length})` }),
+      h('ul', { class: 'fixes' }, [...data.unavailable, ...data.skipped].map(u => h('li', { text: `${u.name}: ${u.reason}` })))) : null);
+}
+
 function contentPage() {
   const instance = state.boot.instance;
+  if (!contentTypes().includes(contentView.type)) contentView.type = 'mods';
   const type = contentView.type;
   const data = contentView.data?.type === type ? contentView.data : null;
   const running = state.game.running;
@@ -847,7 +900,7 @@ function contentPage() {
         item.description ? h('p', { class: 'note small clamp', text: item.description }) : null,
         h('span', { class: 'mono file', text: `${item.file} · ${formatSize(item.size)}` })),
       type === 'mods'
-        ? h('button', { class: 'switch', 'aria-pressed': String(item.enabled), 'aria-label': `${item.name} ${item.enabled ? 'on' : 'off'}`, title: item.managed ? 'Petal needs this mod' : running ? 'Close Minecraft first' : '',
+        ? h('button', { class: 'switch', 'aria-pressed': String(item.enabled), 'aria-label': `${item.name} ${item.enabled ? 'on' : 'off'}`, title: item.managed ? 'Installed by Petal. Use the Petal Pack tab.' : running ? 'Close Minecraft first' : '',
           disabled: item.managed || running || undefined, onClick: () => attempt(async () => {
             contentView.data = await window.petal.toggleContent(item.file, !item.enabled);
             toast(`${item.name} ${item.enabled ? 'switched off' : 'switched on'}. Applies next launch.`, 'success');
@@ -861,9 +914,9 @@ function contentPage() {
   search.addEventListener('input', () => { contentView.query = search.value; fill(); });
   return h('div', { class: 'catalog-page' },
     h('div', { class: 'callout' }, h('span', { text: `Showing ${instance.name} · Minecraft ${instance.gameVersion} · ${instance.loader}. Changes apply the next time you launch.` })),
-    h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Content type' }, Object.entries(CONTENT_TYPES).map(([key, label]) =>
-      h('button', { role: 'tab', 'aria-selected': String(key === type), text: label, onClick: () => { contentView.type = key; contentView.query = ''; contentView.show = 'all'; loadContent(); } }))),
-    h('section', { class: 'card' },
+    h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Content type' }, contentTypes().map(key =>
+      h('button', { role: 'tab', 'aria-selected': String(key === type), text: CONTENT_TYPES[key], onClick: () => { contentView.type = key; contentView.query = ''; contentView.show = 'all'; loadContent(); } }))),
+    type === 'pack' ? (data ? packView(data) : h('section', { class: 'card' }, h('p', { class: 'note', text: 'Loading the Petal Pack…' }))) : h('section', { class: 'card' },
       h('div', { class: 'card-head' },
         h('div', {}, h('h2', { text: CONTENT_TYPES[type] }), h('span', { class: 'mono small muted', text: data ? (type === 'mods' ? `${enabled} of ${data.items.length} on` : `${data.items.length} installed`) : '…' })),
         h('div', { class: 'gallery-toolbar' },

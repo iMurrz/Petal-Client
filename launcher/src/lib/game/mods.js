@@ -3,6 +3,7 @@ const fsp = require('node:fs/promises');
 const path = require('node:path');
 const { hashFile } = require('../http');
 const lock = require('./mods-lock.json');
+const pack = require('../pack');
 
 const MANAGED_FILE = '.petal-managed.json';
 const SAFE = /^[A-Za-z0-9 _.+()'!-]+\.jar$/;
@@ -17,15 +18,19 @@ async function readManaged(dir) {
 }
 
 /**
- * Plans the instance's mods folder: Fabric API (hash-pinned download) plus the Petal mod shipped with the
- * launcher. Only files the launcher placed itself (listed in .petal-managed.json) are ever removed, so
+ * Plans the instance's mods folder: Fabric API and the chosen Petal Pack mods (hash-pinned downloads) plus
+ * the Petal mod shipped with the launcher. Pack mods that were switched off are removed like any other
+ * managed file. Only files the launcher placed itself (listed in .petal-managed.json) are ever removed, so
  * any mods a player drops in are left alone.
  */
 async function planMods(instanceDir, _settings, bundled = []) {
   const dir = path.join(instanceDir, 'mods');
   const keep = new Set();
   const tasks = [];
-  for (const mod of lock.mods) {
+  // Required mods, the Petal Pack mods this player has on, and the libraries those need.
+  const { install } = pack.resolve(pack.readChoices(instanceDir), lock);
+  const chosen = lock.mods.filter(m => install.has(m.slug));
+  for (const mod of chosen) {
     const { url, filename, sha512, size } = mod.file;
     if (!SAFE.test(filename)) throw new Error(`Unsafe file name in lock: ${filename}`);
     keep.add(filename);
@@ -39,7 +44,7 @@ async function planMods(instanceDir, _settings, bundled = []) {
   });
   return {
     tasks,
-    enabled: lock.mods.map(m => m.slug).concat(copies.length ? ['petal'] : []),
+    enabled: chosen.map(m => m.slug).concat(copies.length ? ['petal'] : []),
     async finalize() {
       await fsp.mkdir(dir, { recursive: true });
       for (const { source, dest } of copies) {

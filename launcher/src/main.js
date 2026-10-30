@@ -20,6 +20,7 @@ const packs = require('./lib/packs');
 const { Updater } = require('./lib/updater');
 const crash = require('./lib/crash');
 const content = require('./lib/content');
+const petalPack = require('./lib/pack');
 const { parseJvmArgs } = require('./lib/settings');
 
 // Microsoft sign-in uses the community-standard client id with the device-code flow (microsoft.com/link).
@@ -368,6 +369,10 @@ function registerIpc() {
   });
 
   handle('content:list', type => content.list(instanceDir(), type));
+  const requirePetal = () => { if (!instances.get().petal) throw new Error('The Petal Pack belongs to Petal SMP Survival.'); };
+  handle('pack:list', () => { requirePetal(); return petalPack.list(instanceDir()); });
+  handle('pack:set', ({ slug, enabled }) => { requirePetal(); requireIdle(); return petalPack.set(instanceDir(), String(slug), Boolean(enabled)); });
+  handle('pack:reset', () => { requirePetal(); requireIdle(); return petalPack.reset(instanceDir()); });
   handle('content:toggle', async ({ file, enabled }) => {
     if (game.child) throw new Error('Close Minecraft before switching mods on or off.');
     // Mods Petal downloaded from Modrinth go through the catalog, so its dependency checks still apply.

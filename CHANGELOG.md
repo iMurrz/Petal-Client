@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (2.0 in-game screens)
+## 2.0.0 (2026-10-30)
 
 - Rebuild the Right Shift mod menu in the 2.0 glass look: category pills, mod tiles with Options and Enabled buttons, rounded settings panel.
 - Add a Petal title screen with a dusk backdrop, the main menu, quick join for saved servers and the signed-in account.

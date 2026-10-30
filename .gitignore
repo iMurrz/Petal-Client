@@ -1,0 +1,14 @@
+node_modules/
+launcher/release/
+launcher/launchwrapper/build/
+mod/build/
+mod/.gradle/
+mod/run/
+.idea/
+*.iml
+__pycache__/
+*.pyc
+.devlibs/
+.ref/
+_to_delete/
+.Petal-Client-source.zip

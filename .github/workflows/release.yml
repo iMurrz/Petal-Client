@@ -1,0 +1,51 @@
+name: Release Petal Client
+
+# Push a tag such as v1.3.0 (matching launcher/package.json "version") to build the Windows installer
+# and publish it, with latest.yml, as a GitHub release of this repository (launcher/package.json
+# build.publish). The launcher's "Restart and update" button reads the latest release.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install launcher dependencies
+        working-directory: launcher
+        run: npm install --no-audit --no-fund
+
+      - name: Check launcher sources
+        working-directory: launcher
+        run: npm run check
+
+      - name: Check the tag matches the launcher version
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: launcher
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          [ "v$version" = "${GITHUB_REF_NAME}" ] || { echo "Tag ${GITHUB_REF_NAME} does not match package.json version $version"; exit 1; }
+
+      - name: Build mod and publish installer
+        working-directory: launcher
+        run: npm run build:mod && npx electron-builder --win nsis --x64 --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'

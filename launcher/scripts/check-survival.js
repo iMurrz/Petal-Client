@@ -1,0 +1,38 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const { MODULES, PROFILES, setModule } = require('../src/lib/petal-config');
+const { Settings } = require('../src/lib/settings');
+
+(async () => {
+  const retired = ['keystrokes', 'reach', 'combo', 'togglesprint', 'mineradar', 'petalfx', 'fullbright'];
+  assert.ok(MODULES.every(module => !retired.includes(module.id)));
+  assert.ok(MODULES.every(module => !['PvP', 'Prison'].includes(module.category)));
+  for (const id of ['cropcare', 'locallight', 'supplies', 'targetblock']) assert.ok(MODULES.some(module => module.id === id));
+  const sources = ['HudModules', 'FeatureModules', 'SurvivalModules'].map(name => fs.readFileSync(path.join(__dirname, '../../mod/src/main/java/dev/petal/client/module', `${name}.java`), 'utf8')).join('\n');
+  const pattern = /super\("([^"]+)", "([^"]+)", "([^"]+)", Category\.(\w+), (true|false)(?:, ([\d.]+)f, ([\d.]+)f)?\)/g;
+  const java = [...sources.matchAll(pattern)].map(match => ({ id: match[1], name: match[2], description: match[3], category: match[4].toLowerCase(), on: match[5] === 'true', x: Number(match[6] || 0), y: Number(match[7] || 0) }));
+  assert.equal(java.length, MODULES.length);
+  for (const module of MODULES) assert.deepEqual({ ...module, category: module.category.toLowerCase() }, java.find(entry => entry.id === module.id));
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'petal-survival-check-'));
+  const settingsFile = path.join(temp, 'settings.json');
+  fs.writeFileSync(settingsFile, JSON.stringify({ profile: 'Competitive', memoryMb: 6144, servers: [{ name: 'Ashen Classic', address: 'ashenprison.server.live' }, { name: 'My SMP', address: 'smp.example.com' }] }));
+  const settings = new Settings(settingsFile, 16384).get();
+  assert.equal(settings.profile, 'Builder');
+  assert.equal(settings.memoryMb, 6144);
+  assert.deepEqual(settings.servers, [{ name: 'My SMP', address: 'smp.example.com' }]);
+  assert.equal(new Settings(path.join(temp, 'fresh.json'), 16384).get().servers.length, 0);
+  assert.ok(PROFILES.Builder && !PROFILES.Competitive);
+  const instance = path.join(temp, 'instance');
+  const config = path.join(instance, 'config', 'petal', 'petal.json');
+  fs.mkdirSync(path.dirname(config), { recursive: true });
+  fs.writeFileSync(config, JSON.stringify({ modules: { reach: { enabled: true }, fps: { enabled: true, x: 0.42, scale: 1.5 } } }));
+  await setModule(instance, 'cropcare', true);
+  const result = JSON.parse(fs.readFileSync(config));
+  assert.ok(!result.modules.reach);
+  assert.equal(result.modules.fps.x, 0.42);
+  assert.equal(result.modules.fps.scale, 1.5);
+  assert.equal(result.modules.cropcare.enabled, true);
+  console.log(`Survival checks passed: ${MODULES.length} matching Java/launcher modules, retired-feature removal, profile migration, server preservation and layout preservation.`);
+})().catch(error => { console.error(error); process.exitCode = 1; });

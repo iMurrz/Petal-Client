@@ -32,15 +32,18 @@ async function project(idOrSlug) {
   return info;
 }
 
-/** Candidates in order: the slug, `alts` slugs, then exact-title search for the name and `altNames`. */
+/**
+ * Candidates in order: the slug, then `alts` slugs, then an exact-title search for each of `altNames`.
+ * There is no fuzzy title search: it picks up unofficial ports and forks with similar names.
+ */
 async function findProjects(item) {
   const found = [];
   for (const slug of [item.slug, ...(item.alts || [])]) {
     try { found.push(await project(slug)); } catch (error) { if (error.status !== 404) throw error; }
   }
-  for (const name of [item.name, ...(item.altNames || [])]) {
+  for (const name of item.altNames || []) {
     const result = await getJson(`${API}/search?query=${encodeURIComponent(name)}&facets=${q([['project_type:mod'], [`versions:${gameVersion}`], [`categories:${loader}`]])}&limit=10`);
-    const hit = result.hits.find(h => h.title.toLowerCase() === name.toLowerCase()) || result.hits.find(h => h.title.toLowerCase().startsWith(name.toLowerCase()));
+    const hit = result.hits.find(h => h.title.toLowerCase() === name.toLowerCase());
     if (hit) found.push(await project(hit.project_id));
   }
   return [...new Map(found.map(p => [p.id, p])).values()];
@@ -96,15 +99,17 @@ async function pin(info, build, fields) {
     process.stdout.write(`${item.name}… `);
     try {
       // The first candidate that is a client mod with a compatible build wins.
-      let info = null, build = null, reason = 'Not found on Modrinth.';
+      // The reason reported is the first candidate's, which is the project the manifest names.
+      let info = null, build = null, reason = null;
+      const because = text => { reason ??= text; };
       for (const candidate of await findProjects(item)) {
-        if (candidate.project_type !== 'mod') { reason = `A ${candidate.project_type}, not a mod.`; continue; }
-        if (candidate.client_side === 'unsupported') { reason = 'Server-only mod.'; continue; }
+        if (candidate.project_type !== 'mod') { because(`A ${candidate.project_type}, not a mod.`); continue; }
+        if (candidate.client_side === 'unsupported') { because('Server-only mod.'); continue; }
         const candidateBuild = await bestBuild(candidate.id);
-        if (!candidateBuild) { reason = `No ${gameVersion} ${loader} build yet.`; continue; }
+        if (!candidateBuild) { because(`No ${gameVersion} ${loader} build yet.`); continue; }
         info = candidate; build = candidateBuild; break;
       }
-      if (!info) { unavailable.push({ slug: item.slug, name: item.name, reason }); console.log(reason); continue; }
+      if (!info) { reason ??= 'Not found on Modrinth.'; unavailable.push({ slug: item.slug, name: item.name, reason }); console.log(reason); continue; }
       // A preferred mod (e.g. EMI) that now has a build takes over from the one it replaces.
       if (item.replaces) {
         const replaced = [...entries.values()].find(e => e.slug === item.replaces || (manifest.mods.find(m => m.slug === item.replaces)?.alts || []).includes(e.slug));

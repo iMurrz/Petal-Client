@@ -38,7 +38,7 @@
 
     { "slug": "inventory-profiles-next", "name": "Inventory Profiles Next", "category": "Inventory" },
     { "slug": "mouse-tweaks", "name": "Mouse Tweaks", "category": "Inventory" },
-    { "slug": "mouse-wheelie", "name": "Mouse Wheelie", "category": "Inventory" },
+    { "slug": "mouse-wheelie", "name": "Mouse Wheelie", "category": "Inventory", "off": true, "note": "Overlaps Mouse Tweaks and Inventory Profiles Next on scrolling and sorting. Use one or the other." },
     { "slug": "itemswapper", "name": "ItemSwapper", "category": "Inventory" },
     { "slug": "invmove", "name": "InvMove", "category": "Inventory" },
     { "slug": "chest-tracker", "name": "Chest Tracker", "category": "Inventory", "off": true, "note": "Some servers ban chest memory. Check your server's rules first." },
@@ -50,7 +50,7 @@
     { "slug": "xaeros-world-map", "name": "Xaero's World Map", "category": "Building" },
     { "slug": "bobby", "name": "Bobby", "category": "Building", "off": true, "note": "Caches server chunks past the server's view distance. Some servers ban it." },
     { "slug": "tweakeroo", "name": "Tweakeroo", "category": "Building", "off": true, "note": "Includes freecam and fast placement, which many servers ban. Check the rules first." },
-    { "slug": "item-scroller", "name": "Item Scroller", "category": "Building" },
+    { "slug": "item-scroller", "name": "Item Scroller", "category": "Building", "off": true, "note": "Clashes with Mouse Tweaks on scroll and drag. Switch Mouse Tweaks off if you turn this on." },
     { "slug": "worldeditcui", "name": "WorldEditCUI", "category": "Building", "alts": ["worldedit-cui", "wecui", "worldeditcui-fabric"], "altNames": ["WorldEdit CUI"] },
 
     { "slug": "presence-footsteps", "name": "Presence Footsteps", "category": "Audio" },

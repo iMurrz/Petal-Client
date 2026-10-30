@@ -38,6 +38,7 @@ public final class TokenWrapper {
     private static String readToken() throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
         String line = in.readLine();
-        return line == null || line.isBlank() ? null : line.trim();
+        if (line != null) line = line.trim();
+        return line == null || line.isEmpty() ? null : line;
     }
 }

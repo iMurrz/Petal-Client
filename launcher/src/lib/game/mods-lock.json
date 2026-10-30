@@ -1,7 +1,7 @@
 {
   "gameVersion": "1.21.11",
   "loader": "fabric",
-  "generatedAt": "2026-10-30T15:05:14.667Z",
+  "generatedAt": "2026-10-30T15:10:22.572Z",
   "mods": [
     {
       "slug": "fabric-api",
@@ -167,6 +167,71 @@
       "incompatible": []
     },
     {
+      "slug": "dynamic-fps",
+      "kind": "mod",
+      "name": "Dynamic FPS",
+      "description": "Reduce resource usage while Minecraft is in the background, idle, or on battery.",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "note": "Lowers the frame rate while Minecraft is in the background or minimised.",
+      "projectId": "LQ3K71Q1",
+      "version": "3.11.6",
+      "versionId": "Fab7e5Th",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/LQ3K71Q1/versions/Fab7e5Th/dynamic-fps-3.11.6%2Bminecraft-1.21.11-fabric.jar",
+        "filename": "dynamic-fps-3.11.6+minecraft-1.21.11-fabric.jar",
+        "sha512": "c45652252e2176cb8e2c44dfd9032c617135a100dcf161b9e6e6717803c14d1359d0f940fa10dc1aa6ad80669983f4b9c5636c0c2953d3314e06f893f0cdc736",
+        "size": 219961
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "moreculling",
+      "kind": "mod",
+      "name": "More Culling",
+      "description": "A mod that changes how multiple types of culling are handled in order to improve performance",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "51shyZVL",
+      "version": "1.6.2",
+      "versionId": "wOzykoLV",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/51shyZVL/versions/wOzykoLV/moreculling-fabric-1.21.11-1.6.2.jar",
+        "filename": "moreculling-fabric-1.21.11-1.6.2.jar",
+        "sha512": "58cec88e84835c543d8604411f89a0984abe51f0332860354355ede290d2442fc33a86ecda1766e0b1a82ba4edfab27f3c9f6855c0af3234e200218b892756f2",
+        "size": 340975
+      },
+      "dependencies": [
+        "cloth-config"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "cloth-config",
+      "kind": "mod",
+      "name": "Cloth Config API",
+      "description": "Configuration Library for Minecraft Mods",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "9s6osm5g",
+      "version": "21.11.153+fabric",
+      "versionId": "xuX40TN5",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/9s6osm5g/versions/xuX40TN5/cloth-config-21.11.153-fabric.jar",
+        "filename": "cloth-config-21.11.153-fabric.jar",
+        "sha512": "8f455489d4b71069e998568cf4e1450116f4360a4eb481cd89117f629c6883164886cf63ca08ac4fc929dd13d1112152755a6216d4a1498ee6406ef102093e51",
+        "size": 1148427
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
       "slug": "jade",
       "kind": "mod",
       "name": "Jade 🔍",
@@ -211,6 +276,50 @@
       "incompatible": []
     },
     {
+      "slug": "jei",
+      "kind": "mod",
+      "name": "Just Enough Items (JEI)",
+      "description": "View Items and Recipes",
+      "category": "Information",
+      "defaultEnabled": true,
+      "projectId": "u6dRKJwZ",
+      "version": "27.48.0.106",
+      "versionId": "iykoWl1k",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/u6dRKJwZ/versions/iykoWl1k/jei-1.21.11-fabric-27.48.0.106.jar",
+        "filename": "jei-1.21.11-fabric-27.48.0.106.jar",
+        "sha512": "f747dec422e110fdec26033921b01f52b3dc16f3a307ba1e97634fb2d51fb526d4029383c571949668e9e851927039c30aeda02ec4a7b5323d7c9ecc0899a775",
+        "size": 2419982
+      },
+      "dependencies": [
+        "mezzconfig"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "mezzconfig",
+      "kind": "mod",
+      "name": "MezzConfig",
+      "description": "Simple configuration library for Minecraft Mods",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "7tEfOcA7",
+      "version": "0.6.10",
+      "versionId": "PBqd6SbE",
+      "channel": "beta",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/7tEfOcA7/versions/PBqd6SbE/mezz_config-1.21.11-fabric-0.6.10.jar",
+        "filename": "mezz_config-1.21.11-fabric-0.6.10.jar",
+        "sha512": "4e6adfd786a48611583a3465e67018809d9f940ad01fe0fb99c5c77c03cc3b44abe98334be6ad4a4241349838b52313ee422d88a088f5953df96dc1ae6f9e564",
+        "size": 394196
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
       "slug": "betterf3",
       "kind": "mod",
       "name": "BetterF3",
@@ -231,26 +340,6 @@
         "cloth-config",
         "fabric-api"
       ],
-      "incompatible": []
-    },
-    {
-      "slug": "cloth-config",
-      "kind": "mod",
-      "name": "Cloth Config API",
-      "description": "Configuration Library for Minecraft Mods",
-      "category": "library",
-      "defaultEnabled": false,
-      "projectId": "9s6osm5g",
-      "version": "21.11.153+fabric",
-      "versionId": "xuX40TN5",
-      "channel": "release",
-      "file": {
-        "url": "https://cdn.modrinth.com/data/9s6osm5g/versions/xuX40TN5/cloth-config-21.11.153-fabric.jar",
-        "filename": "cloth-config-21.11.153-fabric.jar",
-        "sha512": "8f455489d4b71069e998568cf4e1450116f4360a4eb481cd89117f629c6883164886cf63ca08ac4fc929dd13d1112152755a6216d4a1498ee6406ef102093e51",
-        "size": 1148427
-      },
-      "dependencies": [],
       "incompatible": []
     },
     {
@@ -316,30 +405,6 @@
         "size": 2161348
       },
       "dependencies": [],
-      "incompatible": []
-    },
-    {
-      "slug": "durability-viewer-updated",
-      "kind": "mod",
-      "name": "Durability Viewer Updated",
-      "description": "Armor and Tool durability HUD",
-      "category": "Information",
-      "defaultEnabled": false,
-      "note": "Overlaps Petal's Tools & Supplies module.",
-      "projectId": "WnbN2C6I",
-      "version": "1.21.11-1.11.2",
-      "versionId": "scO6R6xa",
-      "channel": "release",
-      "file": {
-        "url": "https://cdn.modrinth.com/data/WnbN2C6I/versions/scO6R6xa/DurabilityViewer-1.21.11-1.11.2.jar",
-        "filename": "DurabilityViewer-1.21.11-1.11.2.jar",
-        "sha512": "4b535625eb1d86ce89185b5e570f3ee4e1173ecf930a9168ad460c73908a64c86fa47a6331ed7e0fede5095745b16579b6a0c6b79c19731043dd6b9794871b95",
-        "size": 89087
-      },
-      "dependencies": [
-        "malilib",
-        "fabric-api"
-      ],
       "incompatible": []
     },
     {
@@ -474,6 +539,51 @@
       "incompatible": []
     },
     {
+      "slug": "itemphysic-lite",
+      "kind": "mod",
+      "name": "ItemPhysic Lite",
+      "description": "items fall to the ground and do not float",
+      "category": "Visuals",
+      "defaultEnabled": true,
+      "projectId": "OuyCgP8t",
+      "version": "1.6.11",
+      "versionId": "1hUpcULe",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/OuyCgP8t/versions/1hUpcULe/ItemPhysicLite_FABRIC_v1.6.11_mc1.21.11.jar",
+        "filename": "ItemPhysicLite_FABRIC_v1.6.11_mc1.21.11.jar",
+        "sha512": "8e8b92987a447e5ad9ecf85a51279f864127397aec79bb72fabccda15734d679978d04b3f1ff5f5b7baef9b6b688fbda15e6486af6dfc1574cf0a6325efe7fac",
+        "size": 26771
+      },
+      "dependencies": [
+        "fabric-api",
+        "creativecore"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "creativecore",
+      "kind": "mod",
+      "name": "CreativeCore",
+      "description": "A core mod",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "OsZiaDHq",
+      "version": "2.14.11",
+      "versionId": "jyLHWJlj",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/OsZiaDHq/versions/jyLHWJlj/CreativeCore_FABRIC_v2.14.11_mc1.21.11.jar",
+        "filename": "CreativeCore_FABRIC_v2.14.11_mc1.21.11.jar",
+        "sha512": "f30d3ca11a53a74043010c9c8c2a470de708030c12d325a00b317d72357dc2c250eb0de6ca78bf7f5ba0257a13b61f4a79580b3b92a13ae1b6a8441c5adb76a5",
+        "size": 1392373
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
       "slug": "lambdynamiclights",
       "kind": "mod",
       "name": "LambDynamicLights - Dynamic Lights",
@@ -593,7 +703,8 @@
       "name": "Mouse Wheelie",
       "description": "A \"small\" clientside mod featuring item scrolling, inventory sorting, item refilling and more!",
       "category": "Inventory",
-      "defaultEnabled": true,
+      "defaultEnabled": false,
+      "note": "Overlaps Mouse Tweaks and Inventory Profiles Next on scrolling and sorting. Use one or the other.",
       "projectId": "u5Ic2U1u",
       "version": "1.16.3+mc1.21.11",
       "versionId": "ISyBkZOr",
@@ -789,7 +900,8 @@
       "name": "Item Scroller",
       "description": "A client mod that adds many shortcuts to move items easier and craft faster in inventory screens",
       "category": "Building",
-      "defaultEnabled": true,
+      "defaultEnabled": false,
+      "note": "Clashes with Mouse Tweaks on scroll and drag. Switch Mouse Tweaks off if you turn this on.",
       "projectId": "JygyCSA4",
       "version": "0.30.8",
       "versionId": "dCHMUnrw",
@@ -803,6 +915,26 @@
       "dependencies": [
         "malilib"
       ],
+      "incompatible": []
+    },
+    {
+      "slug": "worldedit-cui",
+      "kind": "mod",
+      "name": "WorldEdit CUI",
+      "description": "WorldEdit CUI is a graphical user interface for WorldEdit, designed to assist in using WorldEdit and prevent accidental errors.",
+      "category": "Building",
+      "defaultEnabled": true,
+      "projectId": "NSLJJooQ",
+      "version": "1.21.11+01",
+      "versionId": "SD1ZtHLA",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/NSLJJooQ/versions/SD1ZtHLA/WorldEditCUI-1.21.11%2B01.jar",
+        "filename": "WorldEditCUI-1.21.11+01.jar",
+        "sha512": "0b81809767c19b17b8f3f388d9fd8d092fd2602215e16fcf5b64cec7af6082dc261148e9817b2a4b3e1501b2ad243abf1870990ab052918e65503a650e84e33e",
+        "size": 706512
+      },
+      "dependencies": [],
       "incompatible": []
     },
     {
@@ -867,57 +999,23 @@
         "creativecore"
       ],
       "incompatible": []
-    },
-    {
-      "slug": "creativecore",
-      "kind": "mod",
-      "name": "CreativeCore",
-      "description": "A core mod",
-      "category": "library",
-      "defaultEnabled": false,
-      "projectId": "OsZiaDHq",
-      "version": "2.14.11",
-      "versionId": "jyLHWJlj",
-      "channel": "release",
-      "file": {
-        "url": "https://cdn.modrinth.com/data/OsZiaDHq/versions/jyLHWJlj/CreativeCore_FABRIC_v2.14.11_mc1.21.11.jar",
-        "filename": "CreativeCore_FABRIC_v2.14.11_mc1.21.11.jar",
-        "sha512": "f30d3ca11a53a74043010c9c8c2a470de708030c12d325a00b317d72357dc2c250eb0de6ca78bf7f5ba0257a13b61f4a79580b3b92a13ae1b6a8441c5adb76a5",
-        "size": 1392373
-      },
-      "dependencies": [
-        "fabric-api"
-      ],
-      "incompatible": []
-    },
-    {
-      "slug": "dripsounds",
-      "kind": "mod",
-      "name": "Drip Sounds",
-      "description": "Adds sounds for drip particles landing & settings for block particles",
-      "category": "Audio",
-      "defaultEnabled": true,
-      "projectId": "T8MMXTpr",
-      "version": "0.5.2+1.21.10-fabric",
-      "versionId": "Qd4Gecqi",
-      "channel": "release",
-      "file": {
-        "url": "https://cdn.modrinth.com/data/T8MMXTpr/versions/Qd4Gecqi/Drip%20Sounds-0.5.2%2B1.21.10-Fabric.jar",
-        "filename": "Drip Sounds-0.5.2+1.21.10-Fabric.jar",
-        "sha512": "40e36001a759a3eff9b2af19f46d18b30e15ee3f529ad952cf152df120dace6ff934eb035940dd2e8d3cda69dc5e191df75b1e32cc21acf0a1ac1199017a88c5",
-        "size": 57484
-      },
-      "dependencies": [
-        "cloth-config"
-      ],
-      "incompatible": []
     }
   ],
   "unavailable": [
     {
+      "slug": "modernfix",
+      "name": "ModernFix",
+      "reason": "No 1.21.11 fabric build yet."
+    },
+    {
       "slug": "emi",
       "name": "EMI",
       "reason": "No 1.21.11 fabric build yet."
+    },
+    {
+      "slug": "durability-viewer",
+      "name": "Durability Viewer",
+      "reason": "Not found on Modrinth."
     },
     {
       "slug": "light-overlay",
@@ -935,11 +1033,6 @@
       "reason": "Not found on Modrinth."
     },
     {
-      "slug": "better-dropped-items",
-      "name": "Better Dropped Items",
-      "reason": "Server-only mod."
-    },
-    {
       "slug": "chest-tracker",
       "name": "Chest Tracker",
       "reason": "No 1.21.11 fabric build yet."
@@ -950,8 +1043,8 @@
       "reason": "No 1.21.11 fabric build yet."
     },
     {
-      "slug": "worldeditcui",
-      "name": "WorldEditCUI",
+      "slug": "drip-sounds",
+      "name": "Drip Sounds",
       "reason": "Not found on Modrinth."
     }
   ],

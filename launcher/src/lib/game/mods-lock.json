@@ -1,7 +1,7 @@
 {
   "gameVersion": "1.21.11",
   "loader": "fabric",
-  "generatedAt": "2026-10-30T15:10:22.572Z",
+  "generatedAt": "2026-10-30T15:11:34.258Z",
   "mods": [
     {
       "slug": "fabric-api",
@@ -405,6 +405,30 @@
         "size": 2161348
       },
       "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "durability-viewer-updated",
+      "kind": "mod",
+      "name": "Durability Viewer Updated",
+      "description": "Armor and Tool durability HUD",
+      "category": "Information",
+      "defaultEnabled": false,
+      "note": "Overlaps Petal's Tools & Supplies module.",
+      "projectId": "WnbN2C6I",
+      "version": "1.21.11-1.11.2",
+      "versionId": "scO6R6xa",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/WnbN2C6I/versions/scO6R6xa/DurabilityViewer-1.21.11-1.11.2.jar",
+        "filename": "DurabilityViewer-1.21.11-1.11.2.jar",
+        "sha512": "4b535625eb1d86ce89185b5e570f3ee4e1173ecf930a9168ad460c73908a64c86fa47a6331ed7e0fede5095745b16579b6a0c6b79c19731043dd6b9794871b95",
+        "size": 89087
+      },
+      "dependencies": [
+        "malilib",
+        "fabric-api"
+      ],
       "incompatible": []
     },
     {
@@ -999,6 +1023,28 @@
         "creativecore"
       ],
       "incompatible": []
+    },
+    {
+      "slug": "dripsounds",
+      "kind": "mod",
+      "name": "Drip Sounds",
+      "description": "Adds sounds for drip particles landing & settings for block particles",
+      "category": "Audio",
+      "defaultEnabled": true,
+      "projectId": "T8MMXTpr",
+      "version": "0.5.2+1.21.10-fabric",
+      "versionId": "Qd4Gecqi",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/T8MMXTpr/versions/Qd4Gecqi/Drip%20Sounds-0.5.2%2B1.21.10-Fabric.jar",
+        "filename": "Drip Sounds-0.5.2+1.21.10-Fabric.jar",
+        "sha512": "40e36001a759a3eff9b2af19f46d18b30e15ee3f529ad952cf152df120dace6ff934eb035940dd2e8d3cda69dc5e191df75b1e32cc21acf0a1ac1199017a88c5",
+        "size": 57484
+      },
+      "dependencies": [
+        "cloth-config"
+      ],
+      "incompatible": []
     }
   ],
   "unavailable": [
@@ -1011,11 +1057,6 @@
       "slug": "emi",
       "name": "EMI",
       "reason": "No 1.21.11 fabric build yet."
-    },
-    {
-      "slug": "durability-viewer",
-      "name": "Durability Viewer",
-      "reason": "Not found on Modrinth."
     },
     {
       "slug": "light-overlay",
@@ -1041,11 +1082,6 @@
       "slug": "clickthrough",
       "name": "ClickThrough",
       "reason": "No 1.21.11 fabric build yet."
-    },
-    {
-      "slug": "drip-sounds",
-      "name": "Drip Sounds",
-      "reason": "Not found on Modrinth."
     }
   ],
   "skipped": [

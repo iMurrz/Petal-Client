@@ -1,7 +1,7 @@
 {
   "gameVersion": "1.21.11",
   "loader": "fabric",
-  "generatedAt": "2026-10-30T15:11:34.258Z",
+  "generatedAt": "2026-10-31T00:40:39.462Z",
   "mods": [
     {
       "slug": "fabric-api",
@@ -628,8 +628,8 @@
         "fabric-api"
       ],
       "incompatible": [
-        "ryoamiclights",
-        "sodium-dynamic-lights"
+        "sodium-dynamic-lights",
+        "ryoamiclights"
       ]
     },
     {
@@ -1045,6 +1045,30 @@
         "cloth-config"
       ],
       "incompatible": []
+    }
+  ],
+  "resourcepacks": [
+    {
+      "slug": "faithful-64x",
+      "kind": "resourcepack",
+      "name": "Faithful",
+      "description": "An even more detailed experience with quadruple-resolution textures!",
+      "note": "Blocks and items by the Faithful team (faithfulpack.net). Petal UI sits on top of it for menus, inventories and the HUD.",
+      "defaultEnabled": true,
+      "projectId": "r4GILswZ",
+      "version": "Release-12",
+      "versionId": "vyty9ijM",
+      "channel": "release",
+      "gameVersions": [
+        "1.21.11"
+      ],
+      "exact": true,
+      "file": {
+        "url": "https://cdn.modrinth.com/data/r4GILswZ/versions/vyty9ijM/Faithful%2064x%20-%20December%202025%20Release.zip",
+        "filename": "Faithful 64x - December 2025 Release.zip",
+        "sha512": "14f984cbaeba8b58284ef51e64893204a655d5d54ef3e6c71aff2155829c46d2c867ddda51d24a67a40ea5e9fabb838536ecc61202c3803645b2661272945cde",
+        "size": 16053919
+      }
     }
   ],
   "unavailable": [

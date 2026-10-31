@@ -18,19 +18,23 @@ The 15-module catalog is shared by ModuleManager.java and launcher/src/lib/petal
 - launcher/src/lib/settings.js: validated preferences and migration, including extra Java flags (parseJvmArgs) and window bounds.
 - launcher/src/lib/crash.js: crash diagnosis from this session's output, crash-reports/ and hs_err logs (2.1).
 - launcher/src/lib/content.js: per-instance mods/resourcepacks/shaderpacks listing, .disabled toggling, file adds; .petal-managed.json files are locked (2.1).
+- launcher/src/lib/game/resourcepacks.js: installs Faithful (mods-lock.json "resourcepacks") and the bundled Petal UI/Textures zips from resourcepacks-ready/, switching each pack on once in options.txt with Petal UI on top; the player's order wins after that (2.2). Rebuild the zips from pack/ when pack textures change; check-launcher fails if pack.mcmeta drifts.
+- launcher/src/lib/catalog.js: Modrinth browser (mods, resource packs, Iris shaders, modpacks), icons as data: URLs, hash-checked pack installs recorded in .petal-catalog.json "packs" (2.2).
 - launcher/src/lib/screenshots.js: safe local previews, adapted from supplied Sloth source.
 - mod/.../module/SurvivalModules.java: farming/building panels.
 - HudModules.java: coordinates, durability, effects and session panels.
 - FeatureModules.java: zoom and builder crosshair only.
 - PetalConfig.java: live reload and merging launcher toggles made during HUD drags.
 - screen/: menu and HUD editing, PetalTitleScreen, PetalPauseScreen and PetalScreens (swaps vanilla title/pause; "More options" reaches vanilla pause), keyboard nudging, reset positions and visibility controls.
+- screen/PetalFrame.java + mixin/ScreenMixin, MouseHandlerMixin, GuiGraphicsMixin: vanilla menus framed in the Petal side menu. The screen is initialised SIDE px narrower and drawn shifted right; the mouse x, scissor hit tests and the backdrop follow. Only exact vanilla classes are framed, and only when at least 320 px of content width remains (2.2).
+- mixin/AbstractContainerScreenMixin + ui/PetalUi: light container titles while Petal UI is selected; plum dim behind in-game screens (2.2).
 - cosmetic/: local-player cosmetics.
 - ui/: Theme (2.0 bloom palette), Draw (rounded, ring and gradient fills), GlassButton (vanilla AbstractButton in glass style), Glyphs (8x8 icons), Dusk (title backdrop).
 - 2.0 design canvas: https://claude.ai/artifact/P7KeikKEcpsrHJLMRNjkhr (its PvP/prison content is superseded by the survival direction).
 
 ## Checks
 
-From launcher: npm run check; node scripts/check-launcher.js (crash, content, instances, settings, pack, duplicate mods); node scripts/check-pack-live.js (needs cdn.modrinth.com: verifies every pinned jar and its dependencies); node scripts/update-pack-lock.js (re-pins the Petal Pack from pack-manifest.json); xvfb-run node_modules/.bin/electron --no-sandbox scripts/smoke.js; node scripts/check-survival.js; npm run build:mod; npm run dist:win.
+From launcher: npm run check; node scripts/check-launcher.js (crash, content, instances, settings, pack, duplicate mods); node scripts/check-pack-live.js (needs cdn.modrinth.com: verifies every pinned jar and its dependencies, and Faithful's pack.mcmeta); node scripts/check-modrinth-live.js (needs Modrinth: searches each Downloads type, loads icons, installs a resource pack and a shader into a temp folder); node scripts/update-pack-lock.js (re-pins the Petal Pack from pack-manifest.json); xvfb-run node_modules/.bin/electron --no-sandbox scripts/smoke.js; node scripts/check-survival.js; npm run build:mod; npm run dist:win.
 Survival checks verify Java/launcher catalog parity and migration in temporary data. scripts/smoke.js checks the five Electron pages, module writes, resolution and gallery with a temporary profile. scripts/check-installed.js checks a locally debug-enabled installed app; reopen normally afterward.
 mod/checks/run.ps1 checks config behavior using a test-only loader stand-in outside shipped sources.
 

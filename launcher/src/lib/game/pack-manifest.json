@@ -15,6 +15,7 @@
     { "slug": "modernfix", "name": "ModernFix", "category": "Performance" },
     { "slug": "moreculling", "name": "More Culling", "category": "Performance" },
 
+    { "slug": "modmenu", "name": "Mod Menu", "category": "Information", "note": "Lists every mod; several pack mods expect it." },
     { "slug": "jade", "name": "Jade", "category": "Information" },
     { "slug": "appleskin", "name": "AppleSkin", "category": "Information" },
     { "slug": "jei", "name": "Just Enough Items", "category": "Information", "alts": ["rei"], "altNames": ["Roughly Enough Items"] },
@@ -57,6 +58,9 @@
     { "slug": "sound-physics-remastered", "name": "Sound Physics Remastered", "category": "Audio" },
     { "slug": "ambientsounds", "name": "AmbientSounds", "category": "Audio" },
     { "slug": "dripsounds", "name": "Drip Sounds", "category": "Audio" }
+  ],
+  "resourcepacks": [
+    { "slug": "faithful-64x", "alts": ["faithful-32x"], "name": "Faithful", "note": "Blocks and items by the Faithful team (faithfulpack.net). Petal UI sits on top of it for menus, inventories and the HUD." }
   ],
   "skipped": [
     { "name": "Indium", "reason": "Sodium 0.6 and newer include the Fabric Rendering API, so Indium is no longer needed." },

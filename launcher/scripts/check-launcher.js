@@ -197,6 +197,98 @@ function zipWith(name, text) {
     assert.ok(plan.tasks.some(t => path.basename(t.dest) === sodium.file.filename), 'Pack copy returns once theirs is gone');
   });
 
+  await check('resource packs: Faithful under Petal UI once, then the player\'s order', async () => {
+    const { planResourcePacks, orderPacks } = require('../src/lib/game/resourcepacks');
+    const lock = require('../src/lib/game/mods-lock.json');
+    const faithful = lock.resourcepacks.find(p => p.slug === 'faithful-64x');
+    assert.ok(faithful, 'Faithful is pinned');
+    const dir = path.join(temp, 'packs-instance');
+    const bundledDir = path.join(temp, 'bundled-packs');
+    fs.mkdirSync(bundledDir, { recursive: true });
+    const bundled = ['Petal-UI-64x.zip', 'Petal-Textures-64x.zip'].map(name => {
+      const file = path.join(bundledDir, name);
+      fs.writeFileSync(file, zipWith('pack.mcmeta', '{}'));
+      return file;
+    });
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'options.txt'), 'maxFps:260\nresourcePacks:["vanilla","fabric","file/Mine.zip"]\n');
+    const read = key => JSON.parse(fs.readFileSync(path.join(dir, 'options.txt'), 'utf8').split('\n').find(l => l.startsWith(`${key}:`)).slice(key.length + 1));
+    let plan = await planResourcePacks(dir, bundled);
+    assert.ok(plan.tasks.some(t => t.sha512 === faithful.file.sha512 && t.group === 'resourcepack'));
+    await plan.finalize();
+    const f = `file/${faithful.file.filename}`;
+    assert.deepEqual(read('resourcePacks'), ['vanilla', 'fabric', 'file/Mine.zip', f, 'file/Petal-UI-64x.zip']);
+    assert.ok(fs.existsSync(path.join(dir, 'resourcepacks', 'Petal-Textures-64x.zip')), 'Petal Textures is installed but left off');
+    assert.match(fs.readFileSync(path.join(dir, 'options.txt'), 'utf8'), /^maxFps:260$/m);
+    // The player turns Faithful off: the next launch leaves it off.
+    fs.writeFileSync(path.join(dir, 'options.txt'), 'resourcePacks:["vanilla","file/Petal-UI-64x.zip"]\n');
+    plan = await planResourcePacks(dir, bundled);
+    await plan.finalize();
+    assert.deepEqual(read('resourcePacks'), ['vanilla', 'file/Petal-UI-64x.zip']);
+    // A new Faithful build replaces the old file in place.
+    assert.deepEqual(orderPacks(['vanilla', 'file/Old.zip', 'file/Petal-UI-64x.zip'], { renamed: new Map([['file/Old.zip', 'file/New.zip']]) }), ['vanilla', 'file/New.zip', 'file/Petal-UI-64x.zip']);
+    // A pack added later slots in under the packs above it in Petal's stack.
+    assert.deepEqual(orderPacks(['vanilla', 'file/P.zip'], { add: ['file/F.zip'], stack: ['file/F.zip', 'file/P.zip'] }), ['vanilla', 'file/F.zip', 'file/P.zip']);
+    // The bundled zips match the pack sources and declare the 1.21.9+ format range.
+    const { readZipEntry } = require('../src/lib/zip');
+    for (const name of ['Petal-UI-64x', 'Petal-Textures-64x']) {
+      const meta = JSON.parse(await readZipEntry(path.join(__dirname, '..', '..', 'resourcepacks-ready', `${name}.zip`), 'pack.mcmeta'));
+      assert.deepEqual(meta, JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'pack', name, 'pack.mcmeta'), 'utf8')), `${name}.zip is out of date: rebuild it from pack/${name}`);
+      assert.ok(meta.pack.min_format <= 75 && meta.pack.max_format >= 75);
+    }
+  });
+
+  await check('Modrinth browser: search filters, icons, pack installs (mocked Modrinth)', async () => {
+    const crypto = require('node:crypto');
+    const catalog = require('../src/lib/catalog');
+    const zip = zipWith('pack.mcmeta', '{"pack":{"pack_format":75,"description":"Test"}}');
+    const sha512 = crypto.createHash('sha512').update(zip).digest('hex');
+    const png = Buffer.from('89504e470d0a1a0a', 'hex');
+    const seen = [];
+    const realFetch = global.fetch;
+    const json = body => new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } });
+    global.fetch = async url => {
+      const u = new URL(String(url));
+      seen.push(u);
+      if (u.pathname === '/v2/search') return json({ total_hits: 1, offset: 0, hits: [{ project_id: 'SHADER1', slug: 'soft', title: 'Soft Shaders', description: 'Pink skies', author: 'someone', downloads: 1234567, follows: 10, project_type: 'shader', icon_url: 'https://cdn.modrinth.com/data/SHADER1/icon.png', display_categories: ['vanilla-like', 'bad category!'], date_modified: '2026-10-01T00:00:00Z' }, { project_id: 'EVIL', title: 'Elsewhere', project_type: 'shader', icon_url: 'https://evil.example/icon.png', categories: [] }] });
+      if (u.pathname === '/v2/project/SHADER1/version') return json([
+        { id: 'OLDBUILD', project_id: 'SHADER1', name: 'Old', version_number: '1', game_versions: ['1.20.1'], loaders: ['iris'], version_type: 'release', files: [{ primary: true, size: 1 }] },
+        { id: 'NEWBUILD', project_id: 'SHADER1', name: 'New', version_number: '2', game_versions: ['1.21.11'], loaders: ['iris'], version_type: 'release', files: [{ primary: true, size: zip.length }] }]);
+      if (u.pathname === '/v2/version/NEWBUILD') return json({ id: 'NEWBUILD', project_id: 'SHADER1', game_versions: ['1.21.11'], loaders: ['iris'], files: [{ primary: true, filename: 'Soft Shaders 2.zip', url: 'https://cdn.modrinth.com/data/SHADER1/versions/NEWBUILD/Soft%20Shaders%202.zip', size: zip.length, hashes: { sha512 } }] });
+      if (u.pathname === '/v2/project/SHADER1') return json({ id: 'SHADER1', title: 'Soft Shaders', project_type: 'shader' });
+      if (u.hostname === 'cdn.modrinth.com' && u.pathname.endsWith('.zip')) return new Response(zip, { status: 200 });
+      if (u.hostname === 'cdn.modrinth.com' && u.pathname.endsWith('icon.png')) return new Response(png, { status: 200, headers: { 'content-type': 'image/png' } });
+      return new Response('not found', { status: 404 });
+    };
+    try {
+      const result = await catalog.search({ query: 'soft', type: 'shader', gameVersion: '1.21.11', loader: 'fabric', sort: 'downloads', category: 'vanilla-like' });
+      const facets = JSON.parse(seen[0].searchParams.get('facets'));
+      assert.deepEqual(facets, [['project_type:shader'], ['versions:1.21.11'], ['categories:iris', 'categories:optifine'], ['categories:vanilla-like']]);
+      assert.equal(seen[0].searchParams.get('index'), 'downloads');
+      assert.equal(result.hits[0].icon, 'https://cdn.modrinth.com/data/SHADER1/icon.png');
+      assert.equal(result.hits[1].icon, null, 'icons from other hosts are dropped');
+      assert.deepEqual(result.hits[0].categories, ['vanilla-like']);
+      await assert.rejects(catalog.search({ type: 'plugin' }));
+      await assert.rejects(catalog.search({ type: 'shader', category: '../x' }));
+      const icons = await catalog.icons([result.hits[0].icon, 'https://evil.example/icon.png']);
+      assert.match(icons[result.hits[0].icon], /^data:image\/png;base64,/);
+      assert.equal(icons['https://evil.example/icon.png'], null);
+      const builds = await catalog.versions('SHADER1', { type: 'shader', gameVersion: '1.21.11' });
+      assert.deepEqual(builds.map(b => [b.id, b.matches]), [['NEWBUILD', true], ['OLDBUILD', false]], 'builds for this version come first');
+      const dir = path.join(temp, 'modrinth-instance');
+      await assert.rejects(catalog.installPack(dir, { loader: 'vanilla' }, 'NEWBUILD'), /Fabric/);
+      const first = await catalog.installPack(dir, { loader: 'fabric' }, 'NEWBUILD');
+      assert.equal(first.already, false);
+      assert.deepEqual(fs.readFileSync(path.join(dir, 'shaderpacks', 'Soft Shaders 2.zip')), zip);
+      assert.equal((await catalog.installPack(dir, { loader: 'fabric' }, 'NEWBUILD')).already, true);
+      assert.deepEqual((await catalog.installedPacks(dir)).map(p => p.projectId), ['SHADER1']);
+      assert.deepEqual(await catalog.installed(dir), [], 'the mod index is untouched');
+      assert.ok(!fs.readdirSync(dir).some(n => n.startsWith('.petal-download-')), 'staging folder removed');
+    } finally {
+      global.fetch = realFetch;
+    }
+  });
+
   await check('pack check: Fabric version ranges', () => {
     const { satisfies } = require('./check-pack-live');
     assert.equal(satisfies('1.10.8+mc1.21.11', '<=1.10.7'), false);

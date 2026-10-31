@@ -130,6 +130,14 @@ if (require.main === module) (async () => {
       }
       console.log(`[${label}] ${top.length} mods checked.`);
     }
+    for (const rp of lock.resourcepacks || []) {
+      const file = path.join(dir, rp.file.filename);
+      await download(rp.file.url, file, { sha512: rp.file.sha512, size: rp.file.size });
+      const meta = await readZipEntry(file, 'pack.mcmeta');
+      if (!meta) { problems++; console.log(`${rp.name}: no pack.mcmeta at the top of the zip, so Minecraft won't list it`); continue; }
+      const info = parseModJson(meta).pack || {};
+      console.log(`${rp.name} ${rp.version}: pack format ${JSON.stringify(info.pack_format ?? info.min_format)}${info.max_format !== undefined ? `-${JSON.stringify(info.max_format)}` : ''}${rp.exact ? '' : ` (built for ${rp.gameVersions.join(', ')})`}`);
+    }
     console.log(problems ? `${problems} problem(s) found.` : 'No missing dependencies, duplicate ids or declared breaks.');
     process.exitCode = problems ? 1 : 0;
   } finally {

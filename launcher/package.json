@@ -1,6 +1,6 @@
 {
   "name": "petal-client",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "description": "Petal Client: an SMP survival, building and farming Minecraft launcher",
   "author": "Petal Client",
@@ -36,6 +36,13 @@
           "petal-client-*.jar",
           "!*-sources.jar",
           "!*-dev.jar"
+        ]
+      },
+      {
+        "from": "../resourcepacks-ready",
+        "to": "resourcepacks",
+        "filter": [
+          "Petal-*.zip"
         ]
       },
       {

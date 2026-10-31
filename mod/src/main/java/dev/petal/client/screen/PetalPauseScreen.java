@@ -28,6 +28,8 @@ public final class PetalPauseScreen extends Screen {
     private static final int SIDE_W = 132;
 
     private int px, py, ph;
+    /** Tighter rows on short windows (large GUI scales) so the panel never runs off the screen. */
+    private boolean compact;
 
     public PetalPauseScreen() {
         super(Component.translatable("menu.game"));
@@ -35,14 +37,16 @@ public final class PetalPauseScreen extends Screen {
 
     @Override
     protected void init() {
-        ph = 196;
+        compact = height < 212;
+        int row = compact ? 20 : 22, step = row + (compact ? 3 : 4);
+        ph = compact ? 166 : 196;
         px = (width - PANEL_W) / 2;
-        py = Math.max(8, (height - ph) / 2);
+        py = Math.max(4, (height - ph) / 2);
         int x = px + 14, w = PANEL_W - 28, half = (w - 6) / 2;
-        int y = py + 44;
+        int y = py + (compact ? 38 : 44);
 
-        addRenderableWidget(new GlassButton(x, y, w, 24, Component.translatable("menu.returnToGame"), GlassButton.Style.BLOOM, this::onClose));
-        y += 30;
+        addRenderableWidget(new GlassButton(x, y, w, row + 2, Component.translatable("menu.returnToGame"), GlassButton.Style.BLOOM, this::onClose));
+        y += row + (compact ? 6 : 8);
 
         GlassButton[] grid = {
             new GlassButton(0, 0, half, 22, Component.literal("Petal mods"), GlassButton.Style.GLASS, () -> minecraft.setScreen(new PetalMenuScreen())).icon(Glyphs.GRID),
@@ -53,16 +57,16 @@ public final class PetalPauseScreen extends Screen {
             new GlassButton(0, 0, half, 22, Component.literal("Edit HUD"), GlassButton.Style.GLASS, () -> minecraft.setScreen(new HudEditorScreen(this))).icon(Glyphs.FRAME)
         };
         for (int i = 0; i < grid.length; i++) {
-            grid[i].setPosition(x + (i % 2) * (half + 6), y + (i / 2) * 26);
+            grid[i].setRectangle(half, row, x + (i % 2) * (half + 6), y + (i / 2) * step);
             addRenderableWidget(grid[i]);
         }
-        y += 3 * 26 + 4;
+        y += 3 * step + 4;
 
-        addRenderableWidget(new GlassButton(x, y, half, 22, Component.literal("More options"), GlassButton.Style.GLASS, () -> {
+        addRenderableWidget(new GlassButton(x, y, half, row, Component.literal("More options"), GlassButton.Style.GLASS, () -> {
             PetalScreens.allowVanillaPause();
             minecraft.setScreen(new PauseScreen(true));
         }).icon(Glyphs.MORE));
-        addRenderableWidget(new GlassButton(x + half + 6, y, half, 22, CommonComponents.disconnectButtonLabel(minecraft.isLocalServer()),
+        addRenderableWidget(new GlassButton(x + half + 6, y, half, row, CommonComponents.disconnectButtonLabel(minecraft.isLocalServer()),
             GlassButton.Style.WARN, this::disconnect).icon(Glyphs.DOOR));
     }
 
@@ -103,10 +107,11 @@ public final class PetalPauseScreen extends Screen {
         Draw.roundOutline(g, px, py, px + PANEL_W, py + ph, 12, Theme.GLASS_LINE);
 
         String where = font.plainSubstrByWidth(place().toUpperCase(Locale.ROOT), (int) ((PANEL_W - 80) / 0.75f));
-        Draw.small(g, font, where, px + 14, py + 12, 0xFFFF9ACF, 0.75f);
+        int head = compact ? -3 : 0;
+        Draw.small(g, font, where, px + 14, py + 12 + head, 0xFFFF9ACF, 0.75f);
         g.pose().pushMatrix();
-        g.pose().translate(px + 14, py + 22);
-        g.pose().scale(1.5f, 1.5f);
+        g.pose().translate(px + 14, py + 22 + head);
+        g.pose().scale(compact ? 1.25f : 1.5f, compact ? 1.25f : 1.5f);
         g.drawString(font, Component.translatable("menu.paused"), 0, 0, Theme.FROST, false);
         g.pose().popMatrix();
 

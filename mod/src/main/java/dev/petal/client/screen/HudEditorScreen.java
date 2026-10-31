@@ -6,6 +6,7 @@ import dev.petal.client.hud.HudRenderer;
 import dev.petal.client.module.Module;
 import dev.petal.client.module.ModuleManager;
 import dev.petal.client.ui.Draw;
+import dev.petal.client.ui.GlassButton;
 import dev.petal.client.ui.Theme;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -85,12 +86,15 @@ public final class HudEditorScreen extends Screen {
                 String label = m.name + "  " + String.format(Locale.ROOT, "%.2f×", m.settings().scale);
                 int ly = b[1] > 12 ? b[1] - 11 : b[1] + b[3] + 3;
                 int lw = font.width(label) + 6;
-                g.fill(b[0] - 1, ly - 1, b[0] - 1 + lw, ly + 9, Theme.PINK);
-                g.drawString(font, label, b[0] + 2, ly, Theme.INK, false);
+                // Keep the tag on screen for panels docked against the right edge.
+                int lx = Math.max(0, Math.min(b[0] - 1, width - lw));
+                g.fill(lx, ly - 1, lx + lw, ly + 9, Theme.PINK);
+                g.drawString(font, label, lx + 3, ly, Theme.INK, false);
             }
         }
 
         String tip = selected == null ? "Drag · Scroll: size · Right-click: hide" : "Arrows: 1 px · Shift: 10 px · Esc: save";
+        tip = GlassButton.fit(font, tip, width - 56);
         int tw = font.width(tip) + 16;
         int tx = (width - tw) / 2, ty = height - 48;
         Draw.chamfer(g, tx, ty, tx + tw, ty + 18, 5, Theme.PANEL);

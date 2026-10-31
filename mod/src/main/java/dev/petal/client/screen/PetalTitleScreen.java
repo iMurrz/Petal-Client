@@ -20,6 +20,7 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Util;
 
 import java.io.File;
@@ -34,6 +35,10 @@ public final class PetalTitleScreen extends Screen {
     private static final int MAX_SERVERS = 3;
 
     private int quickY, quickH, servers;
+    /** Nav button height for this window: shorter (and without subtitles) when the window is short. */
+    private int navH = NAV_H;
+    /** Quick join only shows when it fits beside the menu. */
+    private boolean quick;
 
     public PetalTitleScreen() {
         super(Component.translatable("narrator.screen.title"));
@@ -50,13 +55,19 @@ public final class PetalTitleScreen extends Screen {
     @Override
     protected void init() {
         int y = navTop();
+        // Five nav buttons between the brand and the bottom row, squeezed on short windows (big GUI scales).
+        int bottomRow = height - MARGIN - 20;
+        navH = Math.max(16, Math.min(NAV_H, (bottomRow - 6 - y) / 5 - 4));
+        quick = width - MARGIN * 2 - NAV_W - 16 >= QUICK_W;
         nav(y, "Singleplayer", "Your worlds", Glyphs.HOME, () -> new SelectWorldScreen(this), true);
-        nav(y += NAV_H + 4, "Multiplayer", "Servers and LAN", Glyphs.SERVERS,
+        nav(y += navH + 4, "Multiplayer", "Servers and LAN", Glyphs.SERVERS,
             () -> minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this), minecraft.allowsMultiplayer());
-        nav(y += NAV_H + 4, "Realms", "Your Realms", Glyphs.CLOUD, () -> new RealmsMainScreen(this), minecraft.allowsRealms());
-        nav(y += NAV_H + 4, "Settings", "Video, controls, sound", Glyphs.SLIDERS, () -> new OptionsScreen(this, minecraft.options), true);
-        addRenderableWidget(new GlassButton(MARGIN, y + NAV_H + 4, NAV_W, NAV_H, Component.literal("Screenshots"), GlassButton.Style.GLASS, this::openScreenshots)
-            .icon(Glyphs.CAMERA).subtitle("Open the folder").chevron());
+        nav(y += navH + 4, "Realms", "Your Realms", Glyphs.CLOUD, () -> new RealmsMainScreen(this), minecraft.allowsRealms());
+        nav(y += navH + 4, "Settings", "Video, controls, sound", Glyphs.SLIDERS, () -> new OptionsScreen(this, minecraft.options), true);
+        GlassButton shots = new GlassButton(MARGIN, y + navH + 4, NAV_W, navH, Component.literal("Screenshots"), GlassButton.Style.GLASS, this::openScreenshots)
+            .icon(Glyphs.CAMERA).chevron();
+        if (navH >= 22) shots.subtitle("Open the folder");
+        addRenderableWidget(shots);
 
         int by = height - MARGIN - 20;
         addRenderableWidget(new GlassButton(MARGIN, by, 20, 20, Component.translatable("options.language"), GlassButton.Style.GLASS,
@@ -65,10 +76,11 @@ public final class PetalTitleScreen extends Screen {
             () -> minecraft.setScreen(new AccessibilityOptionsScreen(this, minecraft.options))).iconOnly(Glyphs.PERSON));
         addRenderableWidget(new GlassButton(MARGIN + 48, by, 64, 20, Component.translatable("menu.quit"), GlassButton.Style.GLASS, minecraft::stop));
 
-        // Quick join: the first few saved servers.
+        if (!quick) return;
+        // Quick join: the first few saved servers, as many as fit above the account chip.
         ServerList list = new ServerList(minecraft);
         list.load();
-        servers = Math.min(MAX_SERVERS, list.size());
+        servers = Math.min(Math.min(MAX_SERVERS, list.size()), Math.max(0, (height - MARGIN - 34 - MARGIN - 26 - 28) / 30));
         int qx = width - MARGIN - QUICK_W;
         quickY = MARGIN;
         int ry = quickY + 26;
@@ -80,7 +92,7 @@ public final class PetalTitleScreen extends Screen {
             addRenderableWidget(row);
             ry += 30;
         }
-        if (servers == 0) ry += 20;
+        if (servers == 0) ry += 22;
         addRenderableWidget(new GlassButton(qx + 8, ry + 2, QUICK_W - 16, 18, Component.literal("All servers"), GlassButton.Style.BLOOM,
             () -> minecraft.setScreen(minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this))))
             .active = minecraft.allowsMultiplayer();
@@ -88,8 +100,9 @@ public final class PetalTitleScreen extends Screen {
     }
 
     private void nav(int y, String label, String sub, String[] icon, Supplier<Screen> next, boolean enabled) {
-        GlassButton b = new GlassButton(MARGIN, y, NAV_W, NAV_H, Component.literal(label), GlassButton.Style.GLASS, () -> minecraft.setScreen(next.get()))
-            .icon(icon).subtitle(sub).chevron();
+        GlassButton b = new GlassButton(MARGIN, y, NAV_W, navH, Component.literal(label), GlassButton.Style.GLASS, () -> minecraft.setScreen(next.get()))
+            .icon(icon).chevron();
+        if (navH >= 22) b.subtitle(sub);
         b.active = enabled;
         addRenderableWidget(b);
     }
@@ -121,16 +134,10 @@ public final class PetalTitleScreen extends Screen {
         Draw.small(g, font, "MINECRAFT " + version("minecraft"), MARGIN + 29, MARGIN + 23, 0xFFE9D3F7, 0.75f);
 
         // Quick join panel.
-        int qx = width - MARGIN - QUICK_W;
-        Draw.round(g, qx, quickY, qx + QUICK_W, quickY + quickH, 10, 0xAD10081A);
-        Draw.roundOutline(g, qx, quickY, qx + QUICK_W, quickY + quickH, 10, Theme.GLASS_LINE);
-        g.drawString(font, "Quick join", qx + 10, quickY + 10, Theme.FROST, false);
-        String tag = "SAVED";
-        Draw.small(g, font, tag, qx + QUICK_W - 10 - Math.round(font.width(tag) * 0.75f), quickY + 11, 0xFFE9D3F7, 0.75f);
-        if (servers == 0) Draw.small(g, font, "Servers you add in Multiplayer show up here.", qx + 10, quickY + 30, Theme.LILAC, 0.75f);
+        if (quick) renderQuickJoin(g);
 
         // Account chip.
-        String name = minecraft.getUser().getName();
+        String name = GlassButton.fit(font, minecraft.getUser().getName(), 114);
         int cw = Math.max(90, font.width(name) + 36), cx = width - MARGIN - cw, cy = height - MARGIN - 24;
         Draw.round(g, cx, cy, cx + cw, cy + 24, 8, 0x9E10081A);
         Draw.roundOutline(g, cx, cy, cx + cw, cy + 24, 8, Theme.GLASS_LINE);
@@ -139,11 +146,31 @@ public final class PetalTitleScreen extends Screen {
         g.drawString(font, name, cx + 26, cy + 4, Theme.FROST, false);
         Draw.small(g, font, "Signed in", cx + 26, cy + 14, Theme.SEAFOAM, 0.75f);
 
-        String footer = "Petal Client " + version("petal") + "  ·  Not an official Minecraft product  ·  Copyright Mojang AB";
+        String footer = GlassButton.fit(font, "Petal Client " + version("petal") + "  ·  Not an official Minecraft product  ·  Copyright Mojang AB", (int) ((width - 16) / 0.75f));
         int fw = Math.round(font.width(footer) * 0.75f);
         Draw.small(g, font, footer, (width - fw) / 2, height - 10, 0xBFFFF0F8, 0.75f);
 
         super.render(g, mouseX, mouseY, partialTick);
+    }
+
+    private void renderQuickJoin(GuiGraphics g) {
+        int qx = width - MARGIN - QUICK_W;
+        Draw.round(g, qx, quickY, qx + QUICK_W, quickY + quickH, 10, 0xAD10081A);
+        Draw.roundOutline(g, qx, quickY, qx + QUICK_W, quickY + quickH, 10, Theme.GLASS_LINE);
+        g.drawString(font, "Quick join", qx + 10, quickY + 10, Theme.FROST, false);
+        String tag = "SAVED";
+        Draw.small(g, font, tag, qx + QUICK_W - 10 - Math.round(font.width(tag) * 0.75f), quickY + 11, 0xFFE9D3F7, 0.75f);
+        if (servers == 0) {
+            int ly = quickY + 28;
+            for (FormattedCharSequence line : font.split(Component.literal("Servers you add in Multiplayer show up here."), (int) ((QUICK_W - 20) / 0.75f))) {
+                g.pose().pushMatrix();
+                g.pose().translate(qx + 10, ly);
+                g.pose().scale(0.75f, 0.75f);
+                g.drawString(font, line, 0, 0, Theme.LILAC, false);
+                g.pose().popMatrix();
+                ly += 8;
+            }
+        }
     }
 
     @Override

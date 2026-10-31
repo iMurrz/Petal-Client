@@ -3,7 +3,10 @@
 // For every listed mod it picks the newest release build for the manifest's Minecraft version and
 // loader (falling back to beta, then alpha), records its sha512 and size, and adds required
 // dependencies as library entries. Mods without a compatible build are listed under "unavailable".
-// Fabric API (category "required") is kept as it is. Run: node scripts/update-pack-lock.js [--dry-run]
+// Fabric API (category "required") is kept as it is. Resource packs listed under "resourcepacks" (Faithful)
+// are pinned the same way into the lock's "resourcepacks" list; a pack without a build for the exact
+// Minecraft version falls back to the newest build for the same minor version (1.21.x) and says so.
+// Run: node scripts/update-pack-lock.js [--dry-run]
 const fs = require('node:fs');
 const path = require('node:path');
 const { getJson } = require('../src/lib/http');
@@ -57,6 +60,49 @@ async function bestBuild(projectId) {
     if (build) return build;
   }
   return null;
+}
+
+/** Newest listed resource pack build: exact Minecraft version first, then the same minor version. */
+async function bestPackBuild(projectId) {
+  const builds = (await getJson(`${API}/project/${projectId}/version?loaders=${q(['minecraft'])}`)).filter(b => !b.status || b.status === 'listed');
+  for (const channel of CHANNELS) {
+    const build = builds.find(b => b.version_type === channel && b.game_versions.includes(gameVersion));
+    if (build) return { build, exact: true };
+  }
+  const minor = gameVersion.split('.').slice(0, 2).join('.');
+  const near = builds.find(b => b.version_type === 'release' && b.game_versions.some(v => v === minor || v.startsWith(`${minor}.`)));
+  return near ? { build: near, exact: false } : null;
+}
+
+async function pinResourcePack(item) {
+  let reason = null;
+  for (const slug of [item.slug, ...(item.alts || [])]) {
+    let info;
+    try { info = await project(slug); } catch (error) { if (error.status !== 404) throw error; reason ??= 'Not found on Modrinth.'; continue; }
+    if (info.project_type !== 'resourcepack') { reason ??= `A ${info.project_type}, not a resource pack.`; continue; }
+    const found = await bestPackBuild(info.id);
+    if (!found) { reason ??= `No ${gameVersion.split('.').slice(0, 2).join('.')} build yet.`; continue; }
+    const { build, exact } = found;
+    const file = artifact(build.files.find(f => f.primary) || build.files[0], '.zip');
+    return {
+      entry: {
+        slug: info.slug,
+        kind: 'resourcepack',
+        name: item.name || String(info.title).slice(0, 80),
+        description: String(info.description || '').slice(0, 200),
+        ...(item.note ? { note: item.note } : {}),
+        defaultEnabled: !item.off,
+        projectId: info.id,
+        version: build.version_number,
+        versionId: build.id,
+        channel: build.version_type,
+        gameVersions: build.game_versions.slice(-8),
+        exact,
+        file: { url: file.url, filename: file.filename, sha512: file.hashes.sha512, size: file.size }
+      }
+    };
+  }
+  return { reason: reason || 'Not found on Modrinth.' };
 }
 
 async function pin(info, build, fields) {
@@ -126,12 +172,24 @@ async function pin(info, build, fields) {
       console.log(`failed: ${error.message}`);
     }
   }
+  const resourcepacks = [];
+  for (const item of manifest.resourcepacks || []) {
+    process.stdout.write(`${item.name} (resource pack)… `);
+    try {
+      const { entry, reason } = await pinResourcePack(item);
+      if (entry) { resourcepacks.push(entry); console.log(`${entry.version} (${entry.exact ? gameVersion : `built for ${entry.gameVersions.join(', ')}`})`); }
+      else { unavailable.push({ slug: item.slug, name: item.name, reason }); console.log(reason); }
+    } catch (error) {
+      errors.push(`${item.name}: ${error.message}`);
+      console.log(`failed: ${error.message}`);
+    }
+  }
   const required = lock.mods.filter(m => m.category === 'required');
   const pack = [...entries.values()].filter(e => !required.some(r => r.slug === e.slug));
   const clashes = [];
   for (const e of pack) for (const other of e.incompatible) if (pack.some(p => p.slug === other && p.defaultEnabled && e.defaultEnabled)) clashes.push(`${e.slug} vs ${other}`);
-  const next = { gameVersion, loader, generatedAt: new Date().toISOString(), mods: [...required, ...pack], unavailable, skipped: manifest.skipped };
-  console.log(`\n${pack.filter(e => e.category !== 'library').length} pack mods, ${pack.filter(e => e.category === 'library').length} libraries, ${unavailable.length} unavailable.`);
+  const next = { gameVersion, loader, generatedAt: new Date().toISOString(), mods: [...required, ...pack], resourcepacks, unavailable, skipped: manifest.skipped };
+  console.log(`\n${pack.filter(e => e.category !== 'library').length} pack mods, ${pack.filter(e => e.category === 'library').length} libraries, ${resourcepacks.length} resource packs, ${unavailable.length} unavailable.`);
   for (const u of unavailable) console.log(`  unavailable: ${u.name}: ${u.reason}`);
   if (clashes.length) console.log(`  incompatible pairs both on by default: ${clashes.join(', ')}`);
   if (errors.length) { console.error(`\n${errors.length} lookups failed, so mods-lock.json was left unchanged. Check access to api.modrinth.com and cdn.modrinth.com.`); process.exit(1); }

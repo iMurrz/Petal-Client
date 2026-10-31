@@ -6,6 +6,7 @@ const { allowed, wrongArchNative } = require('./rules');
 const { safeJoin, mavenPath, libraryKey, layout } = require('./paths');
 const { planJavaRuntime } = require('./java');
 const { planMods } = require('./mods');
+const { planResourcePacks } = require('./resourcepacks');
 const gameLock = require('./game-lock.json');
 const securityLibraries = require('./security-libraries.json');
 
@@ -17,6 +18,8 @@ const TRUSTED_HOSTS = new Set([
 const HASH = /^([0-9a-f]{40}|[0-9a-f]{128})$/;
 
 /** Every download must come from a known host over HTTPS and carry a pinned hash. */
+const DATA_GROUPS = new Set(['assets', 'resourcepack']);
+
 function assertSafeTask(task) {
   const { protocol, hostname, username, password, port } = new URL(task.url);
   if (protocol !== 'https:' || username || password || port || !TRUSTED_HOSTS.has(hostname)) throw new Error(`Blocked download from untrusted host: ${hostname}`);
@@ -69,7 +72,7 @@ function throttle(fn, ms) {
  * Everything is hash-chained from game-lock.json and mods-lock.json, which ship inside the launcher.
  * Executable content is hashed on every launch. `deep` also hashes non-executable assets.
  */
-async function prepareGame({ root, instanceId = 'petal', gameVersion, loaderVersion, gameMetadata = gameLock, modSettings, bundledMods = [], javaPath, standalone = false, deep = false, signal, onProgress = () => {} }) {
+async function prepareGame({ root, instanceId = 'petal', gameVersion, loaderVersion, gameMetadata = gameLock, modSettings, bundledMods = [], bundledPacks = [], javaPath, standalone = false, deep = false, signal, onProgress = () => {} }) {
   const gameLock = gameMetadata;
   if (gameLock.gameVersion !== gameVersion || gameLock.fabric.loaderVersion !== loaderVersion) {
     throw new Error(`This launcher build is locked to Minecraft ${gameLock.gameVersion} / Fabric ${gameLock.fabric.loaderVersion}`);
@@ -79,10 +82,11 @@ async function prepareGame({ root, instanceId = 'petal', gameVersion, loaderVers
   emit({ stage: 'meta', label: 'Fetching game info' }, true);
 
   // Independent pinned metadata reads can overlap, including first-install downloads.
-  const [vanilla, java, mods] = await Promise.all([
+  const [vanilla, java, mods, packs] = await Promise.all([
     pinnedJson(gameLock.versionJson.url, path.join(dirs.versions, gameVersion, `${gameVersion}.json`), gameLock.versionJson.sha1, signal),
     javaPath ? Promise.resolve(null) : planJavaRuntime(dirs.runtime, gameLock.java, signal),
-    standalone ? Promise.resolve({ tasks: [], enabled: ['standalone-modpack'], finalize: async () => {} }) : planMods(dirs.instance, modSettings, bundledMods)
+    standalone ? Promise.resolve({ tasks: [], enabled: ['standalone-modpack'], finalize: async () => {} }) : planMods(dirs.instance, modSettings, bundledMods),
+    standalone ? Promise.resolve({ tasks: [], finalize: async () => {} }) : planResourcePacks(dirs.instance, bundledPacks)
   ]);
   const fabric = gameLock.fabric.profile;
   const clientJar = path.join(dirs.versions, vanilla.id, `${vanilla.id}.jar`);
@@ -94,7 +98,7 @@ async function prepareGame({ root, instanceId = 'petal', gameVersion, loaderVers
   for (const task of [
     ...(java?.tasks || []),
     { url: client.url, dest: clientJar, sha1: client.sha1, size: client.size, group: 'client' },
-    ...libs.tasks, ...assets, ...mods.tasks
+    ...libs.tasks, ...assets, ...mods.tasks, ...packs.tasks
   ]) {
     assertSafeTask(task);
     byDest.set(task.dest, task);
@@ -105,7 +109,8 @@ async function prepareGame({ root, instanceId = 'petal', gameVersion, loaderVers
   const missing = [];
   const checkLabel = deep ? 'Verifying game files' : 'Checking game files';
   const check = async task => {
-    if (!(await fileMatches(task.dest, task, deep || task.group !== 'assets'))) missing.push(task);
+    // Assets and resource packs are data, not code: a size check is enough unless this is a deep verify.
+    if (!(await fileMatches(task.dest, task, deep || !DATA_GROUPS.has(task.group)))) missing.push(task);
     checked++;
     emit({ stage: 'check', label: checkLabel, done: checked, total: tasks.length });
   };
@@ -134,6 +139,7 @@ async function prepareGame({ root, instanceId = 'petal', gameVersion, loaderVers
   await java?.finalize();
   await mods.finalize();
   await require('./fresh-options').initializeFreshOptions(dirs.instance,{standalone});
+  await packs.finalize();
   const nativesDir = path.join(dirs.versions, fabric.id, 'natives');
   await fsp.mkdir(nativesDir, { recursive: true });
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.2.0 (unreleased)
+
+- In game, Settings and every settings page, Singleplayer, Multiplayer, resource packs, statistics and advancements open inside a Petal side menu (Home or Resume, each section, Petal mods) over the dusk backdrop. On very large GUI scales, where there isn't room, they open full width as before.
+- Faithful 64x (from Modrinth, hash-checked) is installed and switched on by default, with Petal UI 64x on top for menus, inventories and the HUD. Petal only sets the order once; after that your in-game order wins. Petal Textures 64x is installed but left off.
+- Inventory and container titles switch to a light lilac on Petal UI's dark panels, and in-game screens dim in plum.
+- Petal's title screen, pause menu, mod menu and HUD editor keep every label inside its box at every GUI scale: long text is trimmed or wrapped, and the title and pause menus tighten on short windows.
+- The launcher's Downloads page is now a Modrinth browser: mods, resource packs, shaders and modpacks, with icons, sorting, category filters and one-click install. Results show Installed or In Petal Pack.
+- Fix mod search on Modrinth, which rejected every Minecraft version.
+- Content › Resource packs shows each pack's description and where it sits in the in-game order.
+
 ## 2.1.0 (unreleased)
 
 - Add a Content page for each instance: every mod, resource pack and shader pack with name, version and source (Petal, Modrinth or added by you). Switch mods on and off, add files, open folders. Petal's own mods are protected.

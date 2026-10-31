@@ -197,6 +197,16 @@ function zipWith(name, text) {
     assert.ok(plan.tasks.some(t => path.basename(t.dest) === sodium.file.filename), 'Pack copy returns once theirs is gone');
   });
 
+  await check('pack check: Fabric version ranges', () => {
+    const { satisfies } = require('./check-pack-live');
+    assert.equal(satisfies('1.10.8+mc1.21.11', '<=1.10.7'), false);
+    assert.equal(satisfies('1.6.0-beta.1', '<1.6.0-beta.2'), true);
+    assert.equal(satisfies('1.21.11', '1.21.x'), true);
+    assert.equal(satisfies('1.20.4', ['>=1.21', '1.20.x']), true);
+    assert.equal(satisfies('1.3.0', '~1.2'), false);
+    assert.equal(satisfies('not-a-version', '<1'), null);
+  });
+
   fs.rmSync(temp, { recursive: true, force: true });
   console.log(`Launcher checks passed: ${results.join('; ')}`);
 })().catch(error => {

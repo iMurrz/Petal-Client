@@ -1,5 +1,7 @@
 {
   "key.category.petal.petal": "Petal Client",
   "key.petal.menu": "Open Petal menu",
-  "key.petal.zoom": "Zoom"
+  "key.petal.zoom": "Zoom",
+  "key.petal.freelook": "Freelook (hold)",
+  "key.petal.measure": "Builder Measure: mark corner"
 }

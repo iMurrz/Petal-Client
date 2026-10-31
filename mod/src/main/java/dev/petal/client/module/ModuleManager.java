@@ -24,6 +24,15 @@ public final class ModuleManager {
     public static final SurvivalModules.BuildSupplies SUPPLIES = add(new SurvivalModules.BuildSupplies());
     public static final SurvivalModules.TargetBlock TARGET = add(new SurvivalModules.TargetBlock());
 
+    public static final FeatureModules.Freelook FREELOOK = add(new FeatureModules.Freelook());
+    public static final SurvivalModules.DeathPoint DEATH_POINT = add(new SurvivalModules.DeathPoint());
+    public static final HudModules.Compass COMPASS = add(new HudModules.Compass());
+    public static final SurvivalModules.WorldClock WORLD_CLOCK = add(new SurvivalModules.WorldClock());
+    public static final SurvivalModules.BuilderMeasure MEASURE = add(new SurvivalModules.BuilderMeasure());
+    public static final SurvivalModules.Hunger HUNGER = add(new SurvivalModules.Hunger());
+    public static final SurvivalModules.InventorySpace INVENTORY_SPACE = add(new SurvivalModules.InventorySpace());
+    public static final FeatureModules.ChatTimestamps CHAT_TIME = add(new FeatureModules.ChatTimestamps());
+
     private ModuleManager() {}
 
     private static <T extends Module> T add(T module) {

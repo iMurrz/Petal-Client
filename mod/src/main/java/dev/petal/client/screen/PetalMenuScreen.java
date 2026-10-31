@@ -321,8 +321,7 @@ public final class PetalMenuScreen extends Screen {
             }
         } else {
             int ny = previewTop();
-            String note = m == ModuleManager.ZOOM ? "Hold " + PetalClient.zoomKey.getTranslatedKeyMessage().getString() + " to zoom. Change the key in Controls."
-                    : "This mod changes how the game plays or looks. It has no HUD panel.";
+            String note = m.menuNote() != null ? m.menuNote() : "This mod changes how the game plays or looks. It has no HUD panel.";
             for (FormattedCharSequence line : font.split(Component.literal(note), sw)) {
                 g.drawString(font, line, sx, ny, Theme.HAZE, false);
                 ny += 10;

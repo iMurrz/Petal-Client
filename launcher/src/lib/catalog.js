@@ -4,7 +4,7 @@ const crypto = require('node:crypto');
 const { getJson, download, hashFile } = require('./http');
 const API = 'https://api.modrinth.com/v2';
 const ID = /^[A-Za-z0-9_-]{1,80}$/;
-const FILE = /^[A-Za-z0-9 _.+()'!\[\]-]+\.(jar|mrpack)$/;
+const FILE = /^[A-Za-z0-9 _.+()'!\[\]-]+\.(jar|mrpack|zip)$/;
 const q = value => encodeURIComponent(JSON.stringify(value));
 function id(value) { if (typeof value !== 'string' || !ID.test(value)) throw Error('Invalid Modrinth ID.'); return value; }
 function artifact(file, extension) {

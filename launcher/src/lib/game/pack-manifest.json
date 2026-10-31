@@ -58,6 +58,9 @@
     { "slug": "ambientsounds", "name": "AmbientSounds", "category": "Audio" },
     { "slug": "dripsounds", "name": "Drip Sounds", "category": "Audio" }
   ],
+  "resourcepacks": [
+    { "slug": "faithful-64x", "alts": ["faithful-32x"], "name": "Faithful", "note": "Blocks and items by the Faithful team (faithfulpack.net). Petal UI sits on top of it for menus, inventories and the HUD." }
+  ],
   "skipped": [
     { "name": "Indium", "reason": "Sodium 0.6 and newer include the Fabric Rendering API, so Indium is no longer needed." },
     { "name": "Just Enough Resources", "reason": "No Fabric build for current Minecraft." },

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Add Freelook: hold Left Alt to orbit the camera while your character keeps facing the same way.
+- Add Death Point: distance, direction and height back to your last death, from the location the server already sends. Hides once you reach it.
+- Add Compass: a heading strip with degrees and the biome name.
+- Add World Clock: in-game day, time and how long until you can sleep.
+- Add Builder Measure: press B on two corners for width, height, length and block count.
+- Add Hunger & Saturation and Inventory Space readouts.
+- Add Chat Timestamps (off by default).
+- Ideas came from a read of the Sloth Client feature list; all code is new. No PvP, auto-sprint, fullbright or world-scanning features.
+
 ## 2.0.0 (2026-10-30)
 
 - Rebuild the Right Shift mod menu in the 2.0 glass look: category pills, mod tiles with Options and Enabled buttons, rounded settings panel.

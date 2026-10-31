@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
@@ -215,6 +216,47 @@ public final class HudModules {
         public int[] draw(GuiGraphics g, Minecraft mc, ModuleSettings s, boolean preview) {
             String ip = mc.getCurrentServer() != null ? mc.getCurrentServer().ip : (mc.hasSingleplayerServer() ? "Singleplayer" : "Menu");
             return chip(g, mc.font, ip, "", s);
+        }
+    }
+
+    /** A heading strip: cardinal letters slide past a centre mark, with degrees and the biome underneath. */
+    public static final class Compass extends Hud {
+        private static final int WIDTH = 168;
+        private static final int SPAN = 80;
+        private static final String[] POINTS = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+
+        public Compass() { super("compass", "Compass", "A heading strip for the top of the screen, with your degrees and biome.", Category.SURVIVAL, false, 0.5f, 0.06f); }
+
+        @Override
+        public int[] draw(GuiGraphics g, Minecraft mc, ModuleSettings s, boolean preview) {
+            if (mc.player == null && !preview) return new int[]{0, 0};
+            // Minecraft yaw is 0 facing south and grows clockwise; compass headings start at north.
+            float heading = mc.player != null ? (float) Math.floorMod(Math.round(mc.player.getYRot() * 10) + 1800, 3600) / 10f : 212f;
+            String biome = "Cherry Grove";
+            if (mc.player != null && mc.level != null) {
+                String id = mc.level.getBiome(mc.player.blockPosition()).getRegisteredName();
+                biome = Component.translatable("biome." + id.replace(':', '.')).getString();
+            }
+            Font f = mc.font;
+            int mid = WIDTH / 2;
+            g.fill(0, 0, WIDTH, 32, Theme.hudBackground(s.opacity));
+            int first = (int) Math.ceil((heading - SPAN) / 15f) * 15;
+            for (int d = first; d <= heading + SPAN; d += 15) {
+                int x = mid + Math.round((d - heading) * (mid - 6) / (float) SPAN);
+                int deg = Math.floorMod(d, 360);
+                if (deg % 45 == 0) {
+                    String label = POINTS[deg / 45];
+                    int color = deg == 0 ? s.accent : deg % 90 == 0 ? Theme.TEXT : Theme.SOFT;
+                    g.drawString(f, label, x - f.width(label) / 2, 4, color, false);
+                } else {
+                    g.fill(x, 7, x + 1, 11, Theme.DIM);
+                }
+            }
+            g.fill(mid - 1, 13, mid + 1, 17, s.accent);
+            String below = Math.round(heading) % 360 + "°  ·  " + biome;
+            below = f.plainSubstrByWidth(below, WIDTH - 8);
+            g.drawString(f, below, mid - f.width(below) / 2, 20, Theme.SOFT, false);
+            return new int[]{WIDTH, 32};
         }
     }
 

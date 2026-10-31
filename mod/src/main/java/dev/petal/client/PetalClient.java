@@ -33,6 +33,8 @@ public final class PetalClient implements ClientModInitializer {
     public static final String MOD_ID = "petal";
     public static KeyMapping menuKey;
     public static KeyMapping zoomKey;
+    public static KeyMapping freelookKey;
+    public static KeyMapping measureKey;
 
     @Override
     public void onInitializeClient() {
@@ -41,6 +43,8 @@ public final class PetalClient implements ClientModInitializer {
         KeyMapping.Category category = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "petal"));
         menuKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.petal.menu", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, category));
         zoomKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.petal.zoom", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_C, category));
+        freelookKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.petal.freelook", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, category));
+        measureKey = KeyBindingHelper.registerKeyBinding(new KeyMapping("key.petal.measure", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, category));
 
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(MOD_ID, "hud"), HudRenderer::render);
         HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR, vanilla -> (HudElement) (g, delta) -> {

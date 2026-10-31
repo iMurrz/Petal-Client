@@ -65,6 +65,11 @@ public abstract class Module {
         return false;
     }
 
+    /** Extra help shown in the mod menu for modules without a HUD panel, such as which key to hold. */
+    public String menuNote() {
+        return null;
+    }
+
     /** Called every client tick, enabled or not (modules decide). */
     public void tick(Minecraft mc) {}
 

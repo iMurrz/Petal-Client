@@ -141,6 +141,78 @@ const MODULES = [
     "on": false,
     "x": 0.99,
     "y": 0.7
+  },
+  {
+    "id": "freelook",
+    "name": "Freelook",
+    "description": "Hold Left Alt to look around without turning your character.",
+    "category": "Visual",
+    "on": true,
+    "x": 0,
+    "y": 0
+  },
+  {
+    "id": "deathpoint",
+    "name": "Death Point",
+    "description": "Distance and direction back to where you last died. Hides once you reach it.",
+    "category": "Survival",
+    "on": true,
+    "x": 0.99,
+    "y": 0.3
+  },
+  {
+    "id": "compass",
+    "name": "Compass",
+    "description": "A heading strip for the top of the screen, with your degrees and biome.",
+    "category": "Survival",
+    "on": false,
+    "x": 0.5,
+    "y": 0.06
+  },
+  {
+    "id": "worldclock",
+    "name": "World Clock",
+    "description": "In-game day, time and how long until you can sleep.",
+    "category": "Survival",
+    "on": false,
+    "x": 0.01,
+    "y": 0.32
+  },
+  {
+    "id": "measure",
+    "name": "Builder Measure",
+    "description": "Press B on two corners to see the width, height, length and block count between them.",
+    "category": "Building",
+    "on": true,
+    "x": 0.99,
+    "y": 0.58
+  },
+  {
+    "id": "hunger",
+    "name": "Hunger & Saturation",
+    "description": "Your food points plus the hidden saturation that stops hunger dropping.",
+    "category": "Survival",
+    "on": false,
+    "x": 0.01,
+    "y": 0.6
+  },
+  {
+    "id": "invspace",
+    "name": "Inventory Space",
+    "description": "Free inventory slots, so you head home before your pockets fill.",
+    "category": "Survival",
+    "on": false,
+    "x": 0.01,
+    "y": 0.66
+  },
+  {
+    "id": "chattime",
+    "name": "Chat Timestamps",
+    "description": "Adds the time to each new chat message.",
+    "category": "Utility",
+    "on": false,
+    "x": 0,
+    "y": 0
   }
 ];
 

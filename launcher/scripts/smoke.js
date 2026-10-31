@@ -37,11 +37,22 @@ app.on('web-contents-created', (_event, contents) => {
         await window.petal.setSettings({resolution:null});
         const shots = await window.petal.screenshots({});
         if (shots.total !== 0) throw new Error('Temporary gallery should be empty');
-        for (const page of ['home','mods','instances','downloads','locker','settings','screenshots']) {
+        const packView = await window.petal.packList();
+        if (!packView.mods.length) throw new Error('Petal Pack is empty');
+        const flipped = await window.petal.packSet(packView.mods[0].slug, !packView.mods[0].enabled);
+        if (flipped.mods[0].chosen === packView.mods[0].chosen) throw new Error('Pack switch did not save');
+        await window.petal.packReset();
+        const modsList = await window.petal.listContent('mods');
+        if (!Array.isArray(modsList.items)) throw new Error('Content list failed');
+        let rejected = false;
+        try { await window.petal.setSettings({ jvmArgs: '-javaagent:evil.jar' }); } catch { rejected = true; }
+        if (!rejected) throw new Error('Unsafe Java flag was accepted');
+        if (!Array.isArray(await window.petal.gameLog())) throw new Error('Game log unavailable');
+        for (const page of ['home','mods','content','instances','downloads','locker','screenshots','console','settings']) {
           document.querySelector('[data-page="'+page+'"]').click();
           if (!document.querySelector('#page').textContent.trim()) throw new Error('Empty page: '+page);
         }
-        return { pages: 7, modules: boot.modules.length, instanceSwitching:'isolated' };
+        return { pages: 9, packMods: packView.mods.length, modules: boot.modules.length, instanceSwitching:'isolated' };
       })()`);
       const root = path.join(temporary, 'Petal Client', 'game', 'instances', 'petal');
       const folder = path.join(root, 'screenshots');

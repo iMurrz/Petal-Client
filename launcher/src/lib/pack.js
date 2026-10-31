@@ -49,8 +49,17 @@ function resolve(choices, lock = defaultLock) {
 }
 
 /** The pack as the Content page shows it. */
+/** Pack files Petal skipped because the player has their own copy: filename -> their file. */
+function shadowedFiles(instanceDir) {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(instanceDir, 'mods', '.petal-managed.json'), 'utf8'));
+    return new Map((Array.isArray(data.shadowed) ? data.shadowed : []).filter(s => typeof s?.file === 'string' && typeof s.by === 'string').map(s => [s.file, s.by]));
+  } catch { return new Map(); }
+}
+
 function list(instanceDir, lock = defaultLock) {
   const choices = readChoices(instanceDir);
+  const shadowed = shadowedFiles(instanceDir);
   const { install, neededBy } = resolve(choices, lock);
   const mods = lock.mods.filter(m => m.category !== 'required' && m.category !== 'library').map(m => {
     const chosen = choices[m.slug] ?? m.defaultEnabled;
@@ -58,7 +67,7 @@ function list(instanceDir, lock = defaultLock) {
     return {
       slug: m.slug, name: m.name, description: m.description, category: m.category, version: m.version, note: m.note || null,
       defaultEnabled: m.defaultEnabled, enabled: install.has(m.slug), chosen, neededBy: chosen ? [] : needers,
-      size: m.file.size, conflicts: (m.incompatible || []).filter(slug => install.has(slug))
+      size: m.file.size, ownCopy: shadowed.get(m.file.filename) || null, conflicts: (m.incompatible || []).filter(slug => install.has(slug))
     };
   });
   const downloadBytes = lock.mods.filter(m => install.has(m.slug)).reduce((sum, m) => sum + m.file.size, 0);

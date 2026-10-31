@@ -30,7 +30,7 @@ The 15-module catalog is shared by ModuleManager.java and launcher/src/lib/petal
 
 ## Checks
 
-From launcher: npm run check; node scripts/check-launcher.js (crash, content, instances, settings); node scripts/check-survival.js; npm run build:mod; npm run dist:win.
+From launcher: npm run check; node scripts/check-launcher.js (crash, content, instances, settings, pack, duplicate mods); node scripts/check-pack-live.js (needs cdn.modrinth.com: verifies every pinned jar and its dependencies); node scripts/update-pack-lock.js (re-pins the Petal Pack from pack-manifest.json); xvfb-run node_modules/.bin/electron --no-sandbox scripts/smoke.js; node scripts/check-survival.js; npm run build:mod; npm run dist:win.
 Survival checks verify Java/launcher catalog parity and migration in temporary data. scripts/smoke.js checks the five Electron pages, module writes, resolution and gallery with a temporary profile. scripts/check-installed.js checks a locally debug-enabled installed app; reopen normally afterward.
 mod/checks/run.ps1 checks config behavior using a test-only loader stand-in outside shipped sources.
 

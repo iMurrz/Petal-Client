@@ -172,6 +172,31 @@ function zipWith(name, text) {
     assert.deepEqual(pack.readChoices(dir), {});
   });
 
+  await check('mods: a player\'s own copy wins over the pack copy', async () => {
+    const { planMods } = require('../src/lib/game/mods');
+    const lock = require('../src/lib/game/mods-lock.json');
+    const sodium = lock.mods.find(m => m.slug === 'sodium');
+    assert.ok(sodium, 'Sodium is pinned in the pack');
+    const dir = path.join(temp, 'dupe-instance');
+    const mods = path.join(dir, 'mods');
+    fs.mkdirSync(mods, { recursive: true });
+    let plan = await planMods(dir);
+    assert.ok(plan.tasks.some(t => path.basename(t.dest) === sodium.file.filename));
+    // Stand-ins for the downloaded pack file and a copy the player added themselves.
+    fs.writeFileSync(path.join(mods, sodium.file.filename), zipWith('fabric.mod.json', JSON.stringify({ id: 'sodium' })));
+    fs.writeFileSync(path.join(mods, 'my-sodium.jar'), zipWith('fabric.mod.json', JSON.stringify({ id: 'sodium' })));
+    const result = await plan.finalize();
+    assert.deepEqual(result.shadowed.map(s => s.by), ['my-sodium.jar']);
+    assert.ok(!fs.existsSync(path.join(mods, sodium.file.filename)), 'Petal removed its own copy');
+    assert.ok(fs.existsSync(path.join(mods, 'my-sodium.jar')), 'The player\'s copy is kept');
+    plan = await planMods(dir);
+    assert.ok(!plan.tasks.some(t => path.basename(t.dest) === sodium.file.filename), 'No re-download while the player\'s copy is there');
+    assert.equal(pack.list(dir).mods.find(m => m.slug === 'sodium').ownCopy, 'my-sodium.jar');
+    fs.rmSync(path.join(mods, 'my-sodium.jar'));
+    plan = await planMods(dir);
+    assert.ok(plan.tasks.some(t => path.basename(t.dest) === sodium.file.filename), 'Pack copy returns once theirs is gone');
+  });
+
   fs.rmSync(temp, { recursive: true, force: true });
   console.log(`Launcher checks passed: ${results.join('; ')}`);
 })().catch(error => {

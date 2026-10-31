@@ -847,6 +847,7 @@ function packView(data) {
             h('div', { class: 'content-title' }, h('span', { class: 'name', text: m.name }), h('span', { class: 'mono ver', text: m.version }),
               !m.defaultEnabled ? h('span', { class: 'badge', text: 'Starts off' }) : null,
               locked ? h('span', { class: 'badge modrinth', text: `Needed by ${m.neededBy.join(', ')}` }) : null,
+              m.ownCopy && m.enabled ? h('span', { class: 'badge', title: m.ownCopy, text: 'Using your copy' }) : null,
               m.conflicts.length ? h('span', { class: 'badge petal', text: `Conflicts with ${m.conflicts.join(', ')}` }) : null),
             h('p', { class: 'note small clamp', text: m.description }),
             m.note ? h('p', { class: 'note small pack-note', text: m.note }) : null),

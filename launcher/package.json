@@ -1,6 +1,6 @@
 {
   "name": "petal-client",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "Petal Client: an SMP survival, building and farming Minecraft launcher",
   "author": "Petal Client",

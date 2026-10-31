@@ -18,7 +18,7 @@ const TOKEN_PLACEHOLDER = 'petal-token-via-stdin';
  * spawnGame, so it never appears in the process command line (which Windows auditing, task managers and
  * JVM crash logs record).
  */
-function buildLaunchArgs(plan, { session, memoryMb, resolution, quickPlay, accentHue, wrapperJar, launcherName, launcherVersion, clientId }) {
+function buildLaunchArgs(plan, { session, memoryMb, resolution, quickPlay, accentHue, wrapperJar, launcherName, launcherVersion, clientId, extraJvmArgs = [] }) {
   const features = {
     is_demo_user: false,
     has_custom_resolution: Boolean(resolution),
@@ -52,6 +52,8 @@ function buildLaunchArgs(plan, { session, memoryMb, resolution, quickPlay, accen
   };
   return [
     `-Xms${Math.min(memoryMb, 1024)}M`, `-Xmx${memoryMb}M`, ...GC_FLAGS,
+    // Player-chosen flags, already validated by settings.parseJvmArgs.
+    ...extraJvmArgs,
     // The launcher's accent colour, so the in-game menus match it (a plain number: never user text).
     ...(Number.isInteger(accentHue) ? [`-Dpetal.accentHue=${accentHue}`] : []),
     ...expandArguments(plan.jvmArgs, vars, features),

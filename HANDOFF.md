@@ -15,7 +15,9 @@ The 15-module catalog is shared by ModuleManager.java and launcher/src/lib/petal
 - launcher/src/lib/petal-config.js: module catalog, module/cosmetic JSON, performance profiles.
 - launcher/src/lib/updater.js: self-update from the GitHub repo in package.json build.publish (iMurrz/Petal-Client, public). Verifies installer size + SHA-512 from latest.yml via http.download, runs NSIS with /S --updated --force-run, then quits. Only installs when packaged on Windows.
 - Releasing: bump launcher/package.json version, push tag vX.Y.Z; .github/workflows/release.yml builds and publishes with the built-in GITHUB_TOKEN. dist:win passes --publish never.
-- launcher/src/lib/settings.js: validated preferences and migration.
+- launcher/src/lib/settings.js: validated preferences and migration, including extra Java flags (parseJvmArgs) and window bounds.
+- launcher/src/lib/crash.js: crash diagnosis from this session's output, crash-reports/ and hs_err logs (2.1).
+- launcher/src/lib/content.js: per-instance mods/resourcepacks/shaderpacks listing, .disabled toggling, file adds; .petal-managed.json files are locked (2.1).
 - launcher/src/lib/screenshots.js: safe local previews, adapted from supplied Sloth source.
 - mod/.../module/SurvivalModules.java: farming/building panels.
 - HudModules.java: coordinates, durability, effects and session panels.
@@ -28,7 +30,7 @@ The 15-module catalog is shared by ModuleManager.java and launcher/src/lib/petal
 
 ## Checks
 
-From launcher: npm run check; node scripts/check-survival.js; npm run build:mod; npm run dist:win.
+From launcher: npm run check; node scripts/check-launcher.js (crash, content, instances, settings, pack, duplicate mods); node scripts/check-pack-live.js (needs cdn.modrinth.com: verifies every pinned jar and its dependencies); node scripts/update-pack-lock.js (re-pins the Petal Pack from pack-manifest.json); xvfb-run node_modules/.bin/electron --no-sandbox scripts/smoke.js; node scripts/check-survival.js; npm run build:mod; npm run dist:win.
 Survival checks verify Java/launcher catalog parity and migration in temporary data. scripts/smoke.js checks the five Electron pages, module writes, resolution and gallery with a temporary profile. scripts/check-installed.js checks a locally debug-enabled installed app; reopen normally afterward.
 mod/checks/run.ps1 checks config behavior using a test-only loader stand-in outside shipped sources.
 

@@ -1,6 +1,7 @@
 {
   "gameVersion": "1.21.11",
   "loader": "fabric",
+  "generatedAt": "2026-10-30T15:11:34.258Z",
   "mods": [
     {
       "slug": "fabric-api",
@@ -18,6 +19,1091 @@
         "size": 2426039
       },
       "dependencies": []
+    },
+    {
+      "slug": "sodium",
+      "kind": "mod",
+      "name": "Sodium",
+      "description": "A high-performance rendering engine replacement for Minecraft, which greatly improves frame rates and reduces micro-stutter.",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "AANobbMI",
+      "version": "mc1.21.11-0.8.14-fabric",
+      "versionId": "rkdTcxoT",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/AANobbMI/versions/rkdTcxoT/sodium-fabric-0.8.14%2Bmc1.21.11.jar",
+        "filename": "sodium-fabric-0.8.14+mc1.21.11.jar",
+        "sha512": "04c43f9e8534b87a52c42ffd51b0e344d4ef92dc9cc52da33d13af6a18bf74b05380d2027f1e0db982698d0aff274c42741c1e21b313b0cd75ed3af005fc98d9",
+        "size": 1909150
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "iris",
+      "kind": "mod",
+      "name": "Iris Shaders",
+      "description": "A modern shader pack loader for Minecraft intended to be compatible with existing OptiFine shader packs",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "YL57xq9U",
+      "version": "1.10.8+1.21.11-fabric",
+      "versionId": "ka9PDlsN",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/YL57xq9U/versions/ka9PDlsN/iris-fabric-1.10.8%2Bmc1.21.11.jar",
+        "filename": "iris-fabric-1.10.8+mc1.21.11.jar",
+        "sha512": "f0cad4b6af593b6fc25738c4ef5a2b346125f9693d25a0d486858e54798d2ea87b24d1497e1bb4391729d7d9e490f42771f7fb468d4e1420e372d8643f9e2055",
+        "size": 2807718
+      },
+      "dependencies": [
+        "sodium"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "ferrite-core",
+      "kind": "mod",
+      "name": "FerriteCore",
+      "description": "Memory usage optimizations",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "uXXizFIs",
+      "version": "8.2.0-fabric",
+      "versionId": "Ii0gP3D8",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/uXXizFIs/versions/Ii0gP3D8/ferritecore-8.2.0-fabric.jar",
+        "filename": "ferritecore-8.2.0-fabric.jar",
+        "sha512": "3210926a82eb32efd9bcebabe2f6c053daf5c4337eebc6d5bacba96d283510afbde646e7e195751de795ec70a2ea44fef77cb54bf22c8e57bb832d6217418869",
+        "size": 80138
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "lithium",
+      "kind": "mod",
+      "name": "Lithium",
+      "description": "No-compromises game logic optimization mod, useful for both single-player games and multi-player servers.",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "gvQqBUqZ",
+      "version": "mc1.21.11-0.21.4-fabric",
+      "versionId": "Ow7wA0kG",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/Ow7wA0kG/lithium-fabric-0.21.4%2Bmc1.21.11.jar",
+        "filename": "lithium-fabric-0.21.4+mc1.21.11.jar",
+        "sha512": "f14a5c3d2fad786347ca25083f902139694f618b7c103947f2fd067a7c5ee88a63e1ef8926f7d693ea79ed7d00f57317bae77ef9c2d630bf5ed01ac97a752b94",
+        "size": 900462
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "entityculling",
+      "kind": "mod",
+      "name": "Entity Culling",
+      "description": "Using async path-tracing to hide Block-/Entities that are not visible",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "NNAgCjsB",
+      "version": "1.11.3",
+      "versionId": "CTabrwB1",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/NNAgCjsB/versions/CTabrwB1/entityculling-fabric-1.11.3-mc1.21.11.jar",
+        "filename": "entityculling-fabric-1.11.3-mc1.21.11.jar",
+        "sha512": "4b5516bf8718d74db0e0368ad2fd2f5ce3e986c3abbf65426418ce3ec162651d29579b9be8aa0d34b88f47e310f6b7bab56bde7ff1223c35998bff0bcbed58c5",
+        "size": 1529094
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "immediatelyfast",
+      "kind": "mod",
+      "name": "ImmediatelyFast",
+      "description": "Speed up immediate mode rendering in Minecraft",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "5ZwdcRci",
+      "version": "1.14.3+1.21.11-fabric",
+      "versionId": "4EwhsTu7",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/5ZwdcRci/versions/4EwhsTu7/ImmediatelyFast-Fabric-1.14.3%2B1.21.11.jar",
+        "filename": "ImmediatelyFast-Fabric-1.14.3+1.21.11.jar",
+        "sha512": "2564cb28259352c3aa5759aceca62667de08a7860a40910dad40a043af851a074b2d75cef50b9fa6f1971febb3a5ecebe4067cbd4b60e63ef711b85f4bc21407",
+        "size": 302709
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "clumps",
+      "kind": "mod",
+      "name": "Clumps",
+      "description": "Clumps XP orbs together to reduce lag",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "Wnxd13zP",
+      "version": "29.0.0.1",
+      "versionId": "OgBE8Rz4",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/Wnxd13zP/versions/OgBE8Rz4/Clumps-fabric-1.21.11-29.0.0.1.jar",
+        "filename": "Clumps-fabric-1.21.11-29.0.0.1.jar",
+        "sha512": "3cff3cd2d600a6d84030b38ce6244143d13774d5287627bb7312adae5edc7ae2d9151a2c9c39a00681c354d549b0a62ac48c0077ba586cc10c00d32f39e87f18",
+        "size": 20355
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "dynamic-fps",
+      "kind": "mod",
+      "name": "Dynamic FPS",
+      "description": "Reduce resource usage while Minecraft is in the background, idle, or on battery.",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "note": "Lowers the frame rate while Minecraft is in the background or minimised.",
+      "projectId": "LQ3K71Q1",
+      "version": "3.11.6",
+      "versionId": "Fab7e5Th",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/LQ3K71Q1/versions/Fab7e5Th/dynamic-fps-3.11.6%2Bminecraft-1.21.11-fabric.jar",
+        "filename": "dynamic-fps-3.11.6+minecraft-1.21.11-fabric.jar",
+        "sha512": "c45652252e2176cb8e2c44dfd9032c617135a100dcf161b9e6e6717803c14d1359d0f940fa10dc1aa6ad80669983f4b9c5636c0c2953d3314e06f893f0cdc736",
+        "size": 219961
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "moreculling",
+      "kind": "mod",
+      "name": "More Culling",
+      "description": "A mod that changes how multiple types of culling are handled in order to improve performance",
+      "category": "Performance",
+      "defaultEnabled": true,
+      "projectId": "51shyZVL",
+      "version": "1.6.2",
+      "versionId": "wOzykoLV",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/51shyZVL/versions/wOzykoLV/moreculling-fabric-1.21.11-1.6.2.jar",
+        "filename": "moreculling-fabric-1.21.11-1.6.2.jar",
+        "sha512": "58cec88e84835c543d8604411f89a0984abe51f0332860354355ede290d2442fc33a86ecda1766e0b1a82ba4edfab27f3c9f6855c0af3234e200218b892756f2",
+        "size": 340975
+      },
+      "dependencies": [
+        "cloth-config"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "cloth-config",
+      "kind": "mod",
+      "name": "Cloth Config API",
+      "description": "Configuration Library for Minecraft Mods",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "9s6osm5g",
+      "version": "21.11.153+fabric",
+      "versionId": "xuX40TN5",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/9s6osm5g/versions/xuX40TN5/cloth-config-21.11.153-fabric.jar",
+        "filename": "cloth-config-21.11.153-fabric.jar",
+        "sha512": "8f455489d4b71069e998568cf4e1450116f4360a4eb481cd89117f629c6883164886cf63ca08ac4fc929dd13d1112152755a6216d4a1498ee6406ef102093e51",
+        "size": 1148427
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "jade",
+      "kind": "mod",
+      "name": "Jade 🔍",
+      "description": "Shows information about what you are looking at. (Hwyla/Waila fork for Minecraft 1.16+)",
+      "category": "Information",
+      "defaultEnabled": true,
+      "projectId": "nvQzSEkH",
+      "version": "21.1.6+fabric",
+      "versionId": "swJhAyak",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/nvQzSEkH/versions/swJhAyak/Jade-1.21.11-Fabric-21.1.6.jar",
+        "filename": "Jade-1.21.11-Fabric-21.1.6.jar",
+        "sha512": "6dee10effa6d68c822c59b7704f5506fe674c50d6195da25171641decfa684dc4f14d919656f768fe8fc39003c6193126cb05bb59eed8a1a2bd354dc53875e6d",
+        "size": 950484
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "appleskin",
+      "kind": "mod",
+      "name": "AppleSkin",
+      "description": "Food/hunger-related HUD improvements",
+      "category": "Information",
+      "defaultEnabled": true,
+      "projectId": "EsAfCjCV",
+      "version": "3.0.8+mc1.21.11",
+      "versionId": "59ti1rvg",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/EsAfCjCV/versions/59ti1rvg/appleskin-fabric-mc1.21.11-3.0.8.jar",
+        "filename": "appleskin-fabric-mc1.21.11-3.0.8.jar",
+        "sha512": "d32206cb8d6fac7f0b579f7269203135777283e1639ccb68f8605e9f5469b5b54305fd36ba82c64b48b89ae4f1a38501bfb5827284520c3ec622d95edcfa34de",
+        "size": 180107
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "jei",
+      "kind": "mod",
+      "name": "Just Enough Items (JEI)",
+      "description": "View Items and Recipes",
+      "category": "Information",
+      "defaultEnabled": true,
+      "projectId": "u6dRKJwZ",
+      "version": "27.48.0.106",
+      "versionId": "iykoWl1k",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/u6dRKJwZ/versions/iykoWl1k/jei-1.21.11-fabric-27.48.0.106.jar",
+        "filename": "jei-1.21.11-fabric-27.48.0.106.jar",
+        "sha512": "f747dec422e110fdec26033921b01f52b3dc16f3a307ba1e97634fb2d51fb526d4029383c571949668e9e851927039c30aeda02ec4a7b5323d7c9ecc0899a775",
+        "size": 2419982
+      },
+      "dependencies": [
+        "mezzconfig"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "mezzconfig",
+      "kind": "mod",
+      "name": "MezzConfig",
+      "description": "Simple configuration library for Minecraft Mods",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "7tEfOcA7",
+      "version": "0.6.10",
+      "versionId": "PBqd6SbE",
+      "channel": "beta",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/7tEfOcA7/versions/PBqd6SbE/mezz_config-1.21.11-fabric-0.6.10.jar",
+        "filename": "mezz_config-1.21.11-fabric-0.6.10.jar",
+        "sha512": "4e6adfd786a48611583a3465e67018809d9f940ad01fe0fb99c5c77c03cc3b44abe98334be6ad4a4241349838b52313ee422d88a088f5953df96dc1ae6f9e564",
+        "size": 394196
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "betterf3",
+      "kind": "mod",
+      "name": "BetterF3",
+      "description": "BetterF3 is a mod that replaces Minecraft's original debug HUD with a highly customizable, more human-readable HUD.",
+      "category": "Information",
+      "defaultEnabled": true,
+      "projectId": "8shC1gFX",
+      "version": "17.0.0",
+      "versionId": "Qw1nhj7u",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/8shC1gFX/versions/Qw1nhj7u/BetterF3-17.0.0-Fabric-1.21.11.jar",
+        "filename": "BetterF3-17.0.0-Fabric-1.21.11.jar",
+        "sha512": "5f9f2c7129508a3e27c8f275eb514d53451ba19ffb90aa23c256253c84585a21b4624b24cd51ed3ee28cc1f02fc5fe8bcdbeb48033a6e910f15653c4455b4c50",
+        "size": 1714229
+      },
+      "dependencies": [
+        "cloth-config",
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "shulkerboxtooltip",
+      "kind": "mod",
+      "name": "Shulker Box Tooltip",
+      "description": "View the contents of shulker boxes from your inventory",
+      "category": "Information",
+      "defaultEnabled": true,
+      "projectId": "2M01OLQq",
+      "version": "5.2.16+1.21.11-fabric",
+      "versionId": "rZovgkWT",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/2M01OLQq/versions/rZovgkWT/shulkerboxtooltip-fabric-5.2.16%2B1.21.11.jar",
+        "filename": "shulkerboxtooltip-fabric-5.2.16+1.21.11.jar",
+        "sha512": "98cd0950adafa086201d4595e558c15697ba1c9eda1b47c30803081ae48e2594e74cae5b743b3283990fa9d0da6caab87958bf2e97125bc3cb9107f6ab6f1882",
+        "size": 389259
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "minihud",
+      "kind": "mod",
+      "name": "MiniHUD",
+      "description": "A \"mini F3\" HUD mod, also with various overlays like light level, spawn chunks, slime chunks etc.",
+      "category": "Information",
+      "defaultEnabled": false,
+      "note": "Overlaps Petal's Coordinates and Local Light modules.",
+      "projectId": "UMxybHE8",
+      "version": "0.38.16",
+      "versionId": "EAAbwohB",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/UMxybHE8/versions/EAAbwohB/minihud-fabric-1.21.11-0.38.16.jar",
+        "filename": "minihud-fabric-1.21.11-0.38.16.jar",
+        "sha512": "7ce23a55fb7b03a1839d93b17f6f6b666da6956da510ce790fc9f06a46009ddf33611863c29501a2b2b2261134d4da6d6969eb78b8699ba182407046e593150b",
+        "size": 968356
+      },
+      "dependencies": [
+        "malilib"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "malilib",
+      "kind": "mod",
+      "name": "MaLiLib",
+      "description": "A library mod for client-side mods. Contains most of the common/shared code of masa's client mods, and adds some inter-operation support between the dependent mods.",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "GcWjdA9I",
+      "version": "0.27.20",
+      "versionId": "loabWpyU",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/GcWjdA9I/versions/loabWpyU/malilib-fabric-1.21.11-0.27.20.jar",
+        "filename": "malilib-fabric-1.21.11-0.27.20.jar",
+        "sha512": "c6a0cbc407962b43316e52b15d928aa2137efa86963cdcea29699f43efa6442519206bdbfac23e4c6c36237931006ecd12b9c6450a4efd1a9a20689e50b5622a",
+        "size": 2161348
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "durability-viewer-updated",
+      "kind": "mod",
+      "name": "Durability Viewer Updated",
+      "description": "Armor and Tool durability HUD",
+      "category": "Information",
+      "defaultEnabled": false,
+      "note": "Overlaps Petal's Tools & Supplies module.",
+      "projectId": "WnbN2C6I",
+      "version": "1.21.11-1.11.2",
+      "versionId": "scO6R6xa",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/WnbN2C6I/versions/scO6R6xa/DurabilityViewer-1.21.11-1.11.2.jar",
+        "filename": "DurabilityViewer-1.21.11-1.11.2.jar",
+        "sha512": "4b535625eb1d86ce89185b5e570f3ee4e1173ecf930a9168ad460c73908a64c86fa47a6331ed7e0fede5095745b16579b6a0c6b79c19731043dd6b9794871b95",
+        "size": 89087
+      },
+      "dependencies": [
+        "malilib",
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "distanthorizons",
+      "kind": "mod",
+      "name": "Distant Horizons",
+      "description": "Massively increase render distance without harming performance.",
+      "category": "Visuals",
+      "defaultEnabled": false,
+      "note": "Heavy: give the game 6 GB or more before turning it on.",
+      "projectId": "uCdwusMi",
+      "version": "3.3.3-1.21.11",
+      "versionId": "oNqCUHFk",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/uCdwusMi/versions/oNqCUHFk/DistantHorizons-3.3.3-1.21.11-fabric-neoforge.jar",
+        "filename": "DistantHorizons-3.3.3-1.21.11-fabric-neoforge.jar",
+        "sha512": "317bed5ff65a71233959508aded32ef12923a6575c0dc852fc683834d4112113d2130dc1dae0592ed1ed564298a91313d1508e921aff43992a3362eb0f21ee27",
+        "size": 28300897
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "fallingleaves",
+      "kind": "mod",
+      "name": "Falling Leaves",
+      "description": "Adds a neat little particle effect to leaf blocks",
+      "category": "Visuals",
+      "defaultEnabled": true,
+      "projectId": "WhbRG4iK",
+      "version": "2.0.3+1.21.11",
+      "versionId": "U7hPBr6x",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/WhbRG4iK/versions/U7hPBr6x/fallingleaves-2.0.3%2B1.21.11.jar",
+        "filename": "fallingleaves-2.0.3+1.21.11.jar",
+        "sha512": "6b1ab0536d19ed421d03a678f58c86489e78f349639319cba20035b1950726caf42c53e27b6062aa984b73e9ffebe14f0241d82c070b537de46dd8c867521816",
+        "size": 181268
+      },
+      "dependencies": [
+        "fabric-api",
+        "cloth-config"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "visuality",
+      "kind": "mod",
+      "name": "Visuality",
+      "description": "Little visual improvements by adding a bunch of new particles.",
+      "category": "Visuals",
+      "defaultEnabled": true,
+      "projectId": "rI0hvYcd",
+      "version": "0.7.13+1.21.11",
+      "versionId": "6vzUj4RD",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/rI0hvYcd/versions/6vzUj4RD/visuality-0.7.13%2B1.21.11.jar",
+        "filename": "visuality-0.7.13+1.21.11.jar",
+        "sha512": "95bd2b491d9f97e11807f5b1462b39c9fbcd338ca20892d22ed3ac912c5792b059d7034dc70955f842b7cc3a5aaac8f77e526c30b1eaa9072a113b0f91375cfa",
+        "size": 82033
+      },
+      "dependencies": [
+        "fabric-api",
+        "cloth-config"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "continuity",
+      "kind": "mod",
+      "name": "Continuity",
+      "description": "A Minecraft mod that allows for efficient connected textures",
+      "category": "Visuals",
+      "defaultEnabled": true,
+      "projectId": "1IjD5062",
+      "version": "3.0.1-beta.1+1.21.11",
+      "versionId": "mX1iknM1",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/1IjD5062/versions/mX1iknM1/continuity-3.0.1-beta.1%2B1.21.11.jar",
+        "filename": "continuity-3.0.1-beta.1+1.21.11.jar",
+        "sha512": "b092e95668bf5e32d531842d920e99f865213eaf3e7c26759b51e5a95ef2702c2c0485bba6d8adf4543e8d71680d5a05fad68e94159e8e507033b516b736eb60",
+        "size": 997125
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "entitytexturefeatures",
+      "kind": "mod",
+      "name": "[ETF] Entity Texture Features",
+      "description": "Emissive, Random & Custom texture support for entities in resourcepacks just like Optifine but for Fabric",
+      "category": "Visuals",
+      "defaultEnabled": true,
+      "projectId": "BVzZfTc1",
+      "version": "7.2.6-fabric-1.21.11",
+      "versionId": "KqDOIaTU",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/BVzZfTc1/versions/KqDOIaTU/entity_texture_features-7.2.6-1.21.11-fabric.jar",
+        "filename": "entity_texture_features-7.2.6-1.21.11-fabric.jar",
+        "sha512": "46c34ce2e89ad90d657ce7b550cf9ff4a7e12b2d043f8150d54920e4cdf0defb8790aea56aa8e6f9b4a0e0cd59013e6b3a30c7fba6823a01ecf4dc6840e888b1",
+        "size": 803518
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "entity-model-features",
+      "kind": "mod",
+      "name": "[EMF] Entity Model Features",
+      "description": "EMF is an, OptiFine format, Custom Entity Model replacement mod available for Fabric and Forge.",
+      "category": "Visuals",
+      "defaultEnabled": true,
+      "projectId": "4I1XuqiY",
+      "version": "3.3.12-fabric-1.21.11",
+      "versionId": "x4GbWVyx",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/4I1XuqiY/versions/x4GbWVyx/entity_model_features-3.3.12-1.21.11-fabric.jar",
+        "filename": "entity_model_features-3.3.12-1.21.11-fabric.jar",
+        "sha512": "94832c77539e0ffa0c1a85fe99dd6e31506e2f1155601d0eb96f67796b856e84e1fed3aa0b68fd2f9ea1eb70b03668124ae77e4a754cab73d02c993f3e6c1504",
+        "size": 669397
+      },
+      "dependencies": [
+        "entitytexturefeatures"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "itemphysic-lite",
+      "kind": "mod",
+      "name": "ItemPhysic Lite",
+      "description": "items fall to the ground and do not float",
+      "category": "Visuals",
+      "defaultEnabled": true,
+      "projectId": "OuyCgP8t",
+      "version": "1.6.11",
+      "versionId": "1hUpcULe",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/OuyCgP8t/versions/1hUpcULe/ItemPhysicLite_FABRIC_v1.6.11_mc1.21.11.jar",
+        "filename": "ItemPhysicLite_FABRIC_v1.6.11_mc1.21.11.jar",
+        "sha512": "8e8b92987a447e5ad9ecf85a51279f864127397aec79bb72fabccda15734d679978d04b3f1ff5f5b7baef9b6b688fbda15e6486af6dfc1574cf0a6325efe7fac",
+        "size": 26771
+      },
+      "dependencies": [
+        "fabric-api",
+        "creativecore"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "creativecore",
+      "kind": "mod",
+      "name": "CreativeCore",
+      "description": "A core mod",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "OsZiaDHq",
+      "version": "2.14.11",
+      "versionId": "jyLHWJlj",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/OsZiaDHq/versions/jyLHWJlj/CreativeCore_FABRIC_v2.14.11_mc1.21.11.jar",
+        "filename": "CreativeCore_FABRIC_v2.14.11_mc1.21.11.jar",
+        "sha512": "f30d3ca11a53a74043010c9c8c2a470de708030c12d325a00b317d72357dc2c250eb0de6ca78bf7f5ba0257a13b61f4a79580b3b92a13ae1b6a8441c5adb76a5",
+        "size": 1392373
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "lambdynamiclights",
+      "kind": "mod",
+      "name": "LambDynamicLights - Dynamic Lights",
+      "description": "Adds dynamic lights to Minecraft as the most feature-complete and optimized dynamic lighting mod.",
+      "category": "Visuals",
+      "defaultEnabled": true,
+      "projectId": "yBW8D80W",
+      "version": "4.9.1+1.21.11",
+      "versionId": "5Tp7kdU0",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/yBW8D80W/versions/5Tp7kdU0/lambdynamiclights-4.9.1%2B1.21.11.jar",
+        "filename": "lambdynamiclights-4.9.1+1.21.11.jar",
+        "sha512": "df006fad702f713fa93feaa21ead00f446aa79e1771b5e049844842c7701d3a8a1b360a996c28f79c79a941e95ef63d27bfc563b5bec2ab8bf96eba0b2232fb8",
+        "size": 2144865
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": [
+        "ryoamiclights",
+        "sodium-dynamic-lights"
+      ]
+    },
+    {
+      "slug": "inventory-profiles-next",
+      "kind": "mod",
+      "name": "Inventory Profiles Next",
+      "description": "Take control over your inventory. Sort. Move matching Items. Throw all. Locked slots. Gear sets! And much more.",
+      "category": "Inventory",
+      "defaultEnabled": true,
+      "projectId": "O7RBXm3n",
+      "version": "fabric-1.21.11-2.2.6",
+      "versionId": "YKjWPbto",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/O7RBXm3n/versions/YKjWPbto/InventoryProfilesNext-fabric-1.21.11-2.2.6.jar",
+        "filename": "InventoryProfilesNext-fabric-1.21.11-2.2.6.jar",
+        "sha512": "48bfe840f935229308df47e3b30581a76532bcde3a1c24fa218b4348e47d0dca507fa136c24f62e47c99211a35b901df586f272b2816522cc1f3d066da645660",
+        "size": 1331339
+      },
+      "dependencies": [
+        "fabric-api",
+        "libipn",
+        "fabric-language-kotlin"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "libipn",
+      "kind": "mod",
+      "name": "libIPN",
+      "description": "Inventory Profiles Next GUI/Config library",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "onSQdWhM",
+      "version": "fabric-1.21.11-6.6.3",
+      "versionId": "ByG214OZ",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/onSQdWhM/versions/ByG214OZ/libIPN-fabric-1.21.11-6.6.3.jar",
+        "filename": "libIPN-fabric-1.21.11-6.6.3.jar",
+        "sha512": "a822922ec5a01b83413bdf36248019890207c4ede44ae247ddf298b43d127353842fe5dd411d49277ab906d01479451d03c12881fd0883397cb8774354383983",
+        "size": 635283
+      },
+      "dependencies": [
+        "fabric-api",
+        "fabric-language-kotlin"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "fabric-language-kotlin",
+      "kind": "mod",
+      "name": "Fabric Language Kotlin",
+      "description": "This is a mod that enables usage of the Kotlin programming language for Fabric mods.",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "Ha28R6CL",
+      "version": "1.14.2+kotlin.2.4.21",
+      "versionId": "SKW1BTL3",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/Ha28R6CL/versions/SKW1BTL3/fabric-language-kotlin-1.14.2%2Bkotlin.2.4.21.jar",
+        "filename": "fabric-language-kotlin-1.14.2+kotlin.2.4.21.jar",
+        "sha512": "7fb475c4a7e7bdf8d0aca4b5798a58a354c51443d5b1fbde3e8cf34dfbf7191ef4238b5f07d08ec9490ec180b371624523326c3ad45d4ed2b2be541de9407e5d",
+        "size": 8142878
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "mouse-tweaks",
+      "kind": "mod",
+      "name": "Mouse Tweaks",
+      "description": "Enhances inventory management by adding various functions to the mouse buttons. ",
+      "category": "Inventory",
+      "defaultEnabled": true,
+      "projectId": "aC3cM3Vq",
+      "version": "1.21.11-2.30-fabric",
+      "versionId": "i1duwnJl",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/aC3cM3Vq/versions/i1duwnJl/MouseTweaks-fabric-mc1.21.11-2.30.jar",
+        "filename": "MouseTweaks-fabric-mc1.21.11-2.30.jar",
+        "sha512": "bc2202d067f997a191d6e435d326e12cc5756b72c076e0e342e9f3119dbeb29de7b77fac62d8b48a60e657c79e35bc7e248df969d43f9b5e53492f7890fc2b9c",
+        "size": 75618
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "mouse-wheelie",
+      "kind": "mod",
+      "name": "Mouse Wheelie",
+      "description": "A \"small\" clientside mod featuring item scrolling, inventory sorting, item refilling and more!",
+      "category": "Inventory",
+      "defaultEnabled": false,
+      "note": "Overlaps Mouse Tweaks and Inventory Profiles Next on scrolling and sorting. Use one or the other.",
+      "projectId": "u5Ic2U1u",
+      "version": "1.16.3+mc1.21.11",
+      "versionId": "ISyBkZOr",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/u5Ic2U1u/versions/ISyBkZOr/mouse-wheelie-1.16.3%2Bmc1.21.11.jar",
+        "filename": "mouse-wheelie-1.16.3+mc1.21.11.jar",
+        "sha512": "2d54c430b7857126fbb0627a0e3253914f80906d215b454e0ae72f77a9fc01b7c03e1d455638eb9aa5a1bfc3675d8ef4f5a73eab357dd0995b5a0770b8bb8406",
+        "size": 1146509
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "itemswapper",
+      "kind": "mod",
+      "name": "ItemSwapper",
+      "description": "Inventory update concept for hotswapping items.",
+      "category": "Inventory",
+      "defaultEnabled": true,
+      "projectId": "RPOSBQgq",
+      "version": "0.10.1",
+      "versionId": "L3uzrvqU",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/RPOSBQgq/versions/L3uzrvqU/itemswapper-fabric-0.10.1-mc1.21.11.jar",
+        "filename": "itemswapper-fabric-0.10.1-mc1.21.11.jar",
+        "sha512": "b71df2369170c5ad17c822cd90ba8ff71c356aa8d66fa12ce8a818765b0ccc56ca4535eb2aa0de139f4d5e34fddd1473e295fca713160db7645cd4d0218133a2",
+        "size": 2293900
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "invmove",
+      "kind": "mod",
+      "name": "InvMove",
+      "description": "Adds the ability to walk around while in inventories",
+      "category": "Inventory",
+      "defaultEnabled": true,
+      "projectId": "REfW2AEX",
+      "version": "0.9.3+1.21.11-fabric",
+      "versionId": "gU3PoQLk",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/REfW2AEX/versions/gU3PoQLk/InvMove-0.9.3%2B1.21.11-Fabric.jar",
+        "filename": "InvMove-0.9.3+1.21.11-Fabric.jar",
+        "sha512": "8b815ee060e2fc44edeec2d0ba3f9c6f1d6a324aed00a63cd626f3285803b9672ba351b325f2c4b03bec24549ba62549eaabd8a065655540b9fdae5670ecf640",
+        "size": 84723
+      },
+      "dependencies": [
+        "cloth-config"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "cleancut",
+      "kind": "mod",
+      "name": "CleanCut",
+      "description": "Fight enemies back through grass and other similar obstructions!",
+      "category": "Inventory",
+      "defaultEnabled": true,
+      "projectId": "CCNUnbXG",
+      "version": "8.1.0+1.21.11-fabric",
+      "versionId": "RMhBcAcG",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/CCNUnbXG/versions/RMhBcAcG/cleancut-fabric-1.21.11-8.1.0%2B1.21.11.jar",
+        "filename": "cleancut-fabric-1.21.11-8.1.0+1.21.11.jar",
+        "sha512": "a8bce8813b5388309bf2468ea12693190011066a98107fd83976d41d4c4ad9aa55bca2ee42baa1b21b670bb2ef3bca7a0d946a059ac72b8099ffa09d33091e1c",
+        "size": 17593
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "litematica",
+      "kind": "mod",
+      "name": "Litematica",
+      "description": "A client-side schematic mod with extra features for creative mode work",
+      "category": "Building",
+      "defaultEnabled": true,
+      "projectId": "bEpr0Arc",
+      "version": "0.26.16",
+      "versionId": "mengBR9D",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/bEpr0Arc/versions/mengBR9D/litematica-fabric-1.21.11-0.26.16.jar",
+        "filename": "litematica-fabric-1.21.11-0.26.16.jar",
+        "sha512": "c7d8e4ee3a1a4eacb825b19d389a06e17f6c4b78c3074fd929eb1bb1f5eabdbd77bd09545229b042e50f47aa78deac4005809a4c4bf554537e816e40e2885005",
+        "size": 1966804
+      },
+      "dependencies": [
+        "malilib"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "xaeros-minimap",
+      "kind": "mod",
+      "name": "Xaero's Minimap",
+      "description": "Displays a map of the nearby world terrain, players, mobs, entities in the corner of your screen. Lets you create waypoints which help you find the locations you've marked.",
+      "category": "Building",
+      "defaultEnabled": true,
+      "projectId": "1bokaNcj",
+      "version": "fabric-1.21.11-26.6.2",
+      "versionId": "g0LRDWwe",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/1bokaNcj/versions/g0LRDWwe/xaerominimap-fabric-1.21.11-26.6.2.jar",
+        "filename": "xaerominimap-fabric-1.21.11-26.6.2.jar",
+        "sha512": "dd6cb67230b0790f22c4eb7c4bd383a3fe7047e5d0cb0c3acf53b263eaef25c6410ede7b6b5789f2a77d7b6cd294f08d7301f3ceea48d85d2328594de02438fd",
+        "size": 2204205
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "xaeros-world-map",
+      "kind": "mod",
+      "name": "Xaero's World Map",
+      "description": "Adds a full screen world map which shows you what you have explored in the world. Works great together with Xaero's Minimap.",
+      "category": "Building",
+      "defaultEnabled": true,
+      "projectId": "NcUtCpym",
+      "version": "fabric-1.21.11-1.47.2",
+      "versionId": "ksfmc45B",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/NcUtCpym/versions/ksfmc45B/xaeroworldmap-fabric-1.21.11-1.47.2.jar",
+        "filename": "xaeroworldmap-fabric-1.21.11-1.47.2.jar",
+        "sha512": "85fba137b461bd6b68dee71468072082d081d8f8ed2ff2edd13bd57dc3d19bbce5ed77856b360a40384e4a6607fbad48c7c232e179a2504491c215817078aad1",
+        "size": 1473335
+      },
+      "dependencies": [
+        "fabric-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "bobby",
+      "kind": "mod",
+      "name": "Bobby",
+      "description": "Allows for render distances greater than the server's view-distance",
+      "category": "Building",
+      "defaultEnabled": false,
+      "note": "Caches server chunks past the server's view distance. Some servers ban it.",
+      "projectId": "M08ruV16",
+      "version": "5.2.11.1+mc1.21.11",
+      "versionId": "ZwOXWoVI",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/M08ruV16/versions/ZwOXWoVI/bobby-5.2.11.1%2Bmc1.21.11.jar",
+        "filename": "bobby-5.2.11.1+mc1.21.11.jar",
+        "sha512": "4a691e6601936baf0e1e6fdc7b041caba315e66c75b08424c500a1903cb225d822a633ac565337f2f14bccfee851eb0c5ad672a2277c205ea00ca187ae762835",
+        "size": 872033
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "tweakeroo",
+      "kind": "mod",
+      "name": "Tweakeroo",
+      "description": "Various client-side tweaks, such as hand restock, hotbar swap/cycle, flexible/fast block placement etc.",
+      "category": "Building",
+      "defaultEnabled": false,
+      "note": "Includes freecam and fast placement, which many servers ban. Check the rules first.",
+      "projectId": "t5wuYk45",
+      "version": "0.27.15",
+      "versionId": "5brvodm4",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/t5wuYk45/versions/5brvodm4/tweakeroo-fabric-1.21.11-0.27.15.jar",
+        "filename": "tweakeroo-fabric-1.21.11-0.27.15.jar",
+        "sha512": "170c75e9f4857b03dd8cde1f1522900bb6876b09fb9d6ccd3f16da2d66ec37c90fb4053dabac94cfc5049ed304c501901f5272238aaec27a0a8eb7f5e27f2aa8",
+        "size": 676143
+      },
+      "dependencies": [
+        "malilib"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "item-scroller",
+      "kind": "mod",
+      "name": "Item Scroller",
+      "description": "A client mod that adds many shortcuts to move items easier and craft faster in inventory screens",
+      "category": "Building",
+      "defaultEnabled": false,
+      "note": "Clashes with Mouse Tweaks on scroll and drag. Switch Mouse Tweaks off if you turn this on.",
+      "projectId": "JygyCSA4",
+      "version": "0.30.8",
+      "versionId": "dCHMUnrw",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/JygyCSA4/versions/dCHMUnrw/itemscroller-fabric-1.21.11-0.30.8.jar",
+        "filename": "itemscroller-fabric-1.21.11-0.30.8.jar",
+        "sha512": "cafbdb4b0c3bcd5da0fb0934dec8a0c28cf57a27bc68d6dd5a5e5bcfe08a0a6b8001df86b21a1f906cd3903d5b7c18d952151f9283a2b43f06979a24a124a6b0",
+        "size": 232017
+      },
+      "dependencies": [
+        "malilib"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "worldedit-cui",
+      "kind": "mod",
+      "name": "WorldEdit CUI",
+      "description": "WorldEdit CUI is a graphical user interface for WorldEdit, designed to assist in using WorldEdit and prevent accidental errors.",
+      "category": "Building",
+      "defaultEnabled": true,
+      "projectId": "NSLJJooQ",
+      "version": "1.21.11+01",
+      "versionId": "SD1ZtHLA",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/NSLJJooQ/versions/SD1ZtHLA/WorldEditCUI-1.21.11%2B01.jar",
+        "filename": "WorldEditCUI-1.21.11+01.jar",
+        "sha512": "0b81809767c19b17b8f3f388d9fd8d092fd2602215e16fcf5b64cec7af6082dc261148e9817b2a4b3e1501b2ad243abf1870990ab052918e65503a650e84e33e",
+        "size": 706512
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "presence-footsteps",
+      "kind": "mod",
+      "name": "Presence Footsteps",
+      "description": "..An Overly complicated Sound Mod...",
+      "category": "Audio",
+      "defaultEnabled": true,
+      "projectId": "rcTfTZr3",
+      "version": "1.12.4+1.21.11",
+      "versionId": "xjmToylJ",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/rcTfTZr3/versions/xjmToylJ/PresenceFootsteps-1.12.4%2B1.21.11.jar",
+        "filename": "PresenceFootsteps-1.12.4+1.21.11.jar",
+        "sha512": "9d71f487b8b0bb08d752cd1e40ca1ef74d9701bcd395c02c5d25761f718acbe3493c1d84cca4a371fd8733e72799936206730b81cfc8827b05d4173341fa4d7d",
+        "size": 5757598
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "sound-physics-remastered",
+      "kind": "mod",
+      "name": "Sound Physics Remastered",
+      "description": "A Minecraft mod that provides realistic sound attenuation, reverberation, and absorption through blocks.",
+      "category": "Audio",
+      "defaultEnabled": true,
+      "projectId": "qyVF9oeo",
+      "version": "fabric-1.21.11-1.5.2",
+      "versionId": "61lf1wKt",
+      "channel": "beta",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/qyVF9oeo/versions/61lf1wKt/sound-physics-remastered-fabric-1.21.11-1.5.2.jar",
+        "filename": "sound-physics-remastered-fabric-1.21.11-1.5.2.jar",
+        "sha512": "abb5dece10b84ab9f0a658a18ae4f9d2e9928322b3133ce320570f6f80cd4621ba94a17220001372d9d810205d0bf6bdbd61606e5b1d443cb2a00a1df0ad178a",
+        "size": 204180
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "ambientsounds",
+      "kind": "mod",
+      "name": "AmbientSounds",
+      "description": "#listentonature",
+      "category": "Audio",
+      "defaultEnabled": true,
+      "projectId": "fM515JnW",
+      "version": "6.3.5",
+      "versionId": "JZUqW70J",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/fM515JnW/versions/JZUqW70J/AmbientSounds_FABRIC_v6.3.5_mc1.21.11.jar",
+        "filename": "AmbientSounds_FABRIC_v6.3.5_mc1.21.11.jar",
+        "sha512": "1b16caf81948127af1d40cddc16b44bd5bf21c43883fe494eb5912d7fa28d518dac8148bada769454c4d64777c40ea7637e52fea89b7485215779dc17751d7ca",
+        "size": 84821614
+      },
+      "dependencies": [
+        "fabric-api",
+        "creativecore"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "dripsounds",
+      "kind": "mod",
+      "name": "Drip Sounds",
+      "description": "Adds sounds for drip particles landing & settings for block particles",
+      "category": "Audio",
+      "defaultEnabled": true,
+      "projectId": "T8MMXTpr",
+      "version": "0.5.2+1.21.10-fabric",
+      "versionId": "Qd4Gecqi",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/T8MMXTpr/versions/Qd4Gecqi/Drip%20Sounds-0.5.2%2B1.21.10-Fabric.jar",
+        "filename": "Drip Sounds-0.5.2+1.21.10-Fabric.jar",
+        "sha512": "40e36001a759a3eff9b2af19f46d18b30e15ee3f529ad952cf152df120dace6ff934eb035940dd2e8d3cda69dc5e191df75b1e32cc21acf0a1ac1199017a88c5",
+        "size": 57484
+      },
+      "dependencies": [
+        "cloth-config"
+      ],
+      "incompatible": []
+    }
+  ],
+  "unavailable": [
+    {
+      "slug": "modernfix",
+      "name": "ModernFix",
+      "reason": "No 1.21.11 fabric build yet."
+    },
+    {
+      "slug": "emi",
+      "name": "EMI",
+      "reason": "No 1.21.11 fabric build yet."
+    },
+    {
+      "slug": "light-overlay",
+      "name": "Light Overlay",
+      "reason": "No 1.21.11 fabric build yet."
+    },
+    {
+      "slug": "effective",
+      "name": "Effective",
+      "reason": "No 1.21.11 fabric build yet."
+    },
+    {
+      "slug": "illuminations",
+      "name": "Illuminations",
+      "reason": "Not found on Modrinth."
+    },
+    {
+      "slug": "chest-tracker",
+      "name": "Chest Tracker",
+      "reason": "No 1.21.11 fabric build yet."
+    },
+    {
+      "slug": "clickthrough",
+      "name": "ClickThrough",
+      "reason": "No 1.21.11 fabric build yet."
+    }
+  ],
+  "skipped": [
+    {
+      "name": "Indium",
+      "reason": "Sodium 0.6 and newer include the Fabric Rendering API, so Indium is no longer needed."
+    },
+    {
+      "name": "Just Enough Resources",
+      "reason": "No Fabric build for current Minecraft."
+    },
+    {
+      "name": "Embeddium, Oculus, Canary",
+      "reason": "NeoForge versions of Sodium, Iris and Lithium; Petal uses Fabric."
+    },
+    {
+      "name": "WTHIT, JEI, REI, JourneyMap, Farsight",
+      "reason": "Alternatives to Jade, EMI, Xaero's maps and Bobby; one of each is enough."
+    },
+    {
+      "name": "Motschen's Better Leaves",
+      "reason": "A resource pack, not a mod. Add it from Content > Resource packs if you want it."
     }
   ]
 }

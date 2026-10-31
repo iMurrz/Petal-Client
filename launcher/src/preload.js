@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('petal', {
   catalogVersions: request => call('catalog:versions', request),
   installedMods: () => call('catalog:installed'),
   installMod: versionId => call('catalog:install', versionId),
+  installPackFile: versionId => call('catalog:install-pack', versionId),
+  catalogIcons: urls => call('catalog:icons', urls),
   disableMod: projectId => call('catalog:disable', projectId),
   reviewPack: versionId => call('packs:review', versionId),
   importPack: () => call('packs:import'),

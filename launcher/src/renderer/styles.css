@@ -502,3 +502,25 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 /* Resource pack state on the Content page: packs are ordered in game, so this is a label, not a switch. */
 .pack-state { flex: none; font: 600 12px/1 'Geist Mono', monospace; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
 .pack-state.on { color: #ffd6ea; border-color: rgba(255, 79, 163, .45); background: rgba(255, 79, 163, .12); }
+
+/* Modrinth browser (Downloads). Every text block is clamped or ellipsized so cards keep their shape. */
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.chip { min-height: 30px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); color: var(--soft); font: 600 12px/1 inherit; cursor: pointer; white-space: nowrap; }
+.chip:hover:not(:disabled) { border-color: var(--glass-line); color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--bloom); border-color: transparent; color: #FFFFFF; }
+.chip:disabled { opacity: 0.5; cursor: default; }
+.mr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; }
+.mr-card { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: start; gap: 14px; padding: 16px; min-width: 0; }
+.mr-icon { width: 52px; height: 52px; border-radius: 14px; object-fit: cover; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(232, 36, 139, 0.28), rgba(109, 40, 217, 0.32)); color: #FFD3EA; font: 600 15px/1 'Geist Mono', monospace; }
+.mr-body { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.mr-head { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.mr-title { margin: 0; font-size: 15px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mr-author { flex: none; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 12px; }
+.mr-body .note { margin: 0; }
+.mr-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 11px; color: var(--dim); }
+.mr-meta .badge { font-size: 10px; }
+.mr-actions { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 92px; }
+.mr-actions .badge { text-align: center; padding: 8px 10px; }
+.mr-pages { justify-content: center; }
+.ellipsis { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) { .mr-grid { grid-template-columns: 1fr; } .mr-card { grid-template-columns: 44px minmax(0, 1fr); } .mr-actions { grid-column: 1 / -1; flex-direction: row; } }

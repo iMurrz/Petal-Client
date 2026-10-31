@@ -91,7 +91,7 @@ const state = {
 const PAGES = ['home', 'mods', 'content', 'instances', 'downloads', 'locker', 'screenshots', 'console', 'settings'];
 const TITLES = { home: 'Play', mods: 'Petal modules', content: 'Content', instances: 'Instances', downloads: 'Downloads', locker: 'Locker', screenshots: 'Screenshots', console: 'Console', settings: 'Settings' };
 const library = { releases: [], name: 'My survival world', version: '1.21.11', loader: 'fabric', loading: false, notice: '', renaming: null };
-const discover = { query: '', type: 'modpack', hits: [], total: 0, offset: 0, project: null, versions: [], versionId: '', loading: false, review: null, optional: true, installed: [], notice: '', created: null };
+const discover = { query: '', type: 'mod', sort: 'relevance', category: '', icons: {}, busyId: '', searched: false, hits: [], total: 0, offset: 0, project: null, versions: [], versionId: '', loading: false, review: null, optional: true, installed: [], notice: '', created: null };
 
 function applyBootstrap(boot) {
   state.boot = boot;
@@ -119,13 +119,63 @@ function coreOnlyPage(noun) {
     h('button', { class: 'btn btn-pink', text: 'Select Petal SMP Survival', disabled: state.game.running || state.game.preparing, onClick: () => selectInstance('petal') }),
     h('button', { class: 'btn btn-line', text: 'Browse downloads', onClick: () => go('downloads') }));
 }
+const MODRINTH_TYPES = [['mod', 'Mods'], ['resourcepack', 'Resource packs'], ['shader', 'Shaders'], ['modpack', 'Modpacks']];
+const MODRINTH_SORTS = [['relevance', 'Best match'], ['downloads', 'Most downloaded'], ['follows', 'Most followed'], ['updated', 'Recently updated'], ['newest', 'Newest']];
+// Survival-friendly Modrinth categories for each type (no PvP or combat filters).
+const MODRINTH_CATEGORIES = {
+  mod: ['optimization', 'utility', 'decoration', 'storage', 'food', 'transportation', 'equipment', 'worldgen', 'management', 'social'],
+  resourcepack: ['vanilla-like', '16x', '32x', '64x', 'simplistic', 'realistic', 'themed', 'gui', 'tweaks', 'audio'],
+  shader: ['vanilla-like', 'semi-realistic', 'realistic', 'fantasy', 'cartoon', 'potato', 'low', 'medium', 'high'],
+  modpack: ['optimization', 'lightweight', 'multiplayer', 'adventure', 'quests', 'technology', 'magic', 'kitchen-sink']
+};
+const categoryLabel = c => /^\d/.test(c) ? c : c.replace(/-/g, ' ').replace(/^./, x => x.toUpperCase());
+function compactNumber(n) {
+  return new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(Number(n) || 0);
+}
 async function searchCatalog(offset = 0) {
   discover.loading = true; discover.notice = ''; render();
   try {
-    const result = await window.petal.searchCatalog({ query: discover.query, type: discover.type, offset });
-    discover.hits = result.hits; discover.total = result.total; discover.offset = result.offset;
+    const result = await window.petal.searchCatalog({ query: discover.query, type: discover.type, sort: discover.sort, category: discover.category || undefined, offset });
+    discover.hits = result.hits; discover.total = result.total; discover.offset = result.offset; discover.searched = true;
+    loadIcons(result.hits);
   } catch (error) { discover.notice = error.message; }
   finally { discover.loading = false; if (state.page === 'downloads') render(); }
+}
+/** Icons arrive after the results, as data: URLs fetched by the launcher. */
+async function loadIcons(hits) {
+  const wanted = hits.map(hit => hit.icon).filter(url => url && !(url in discover.icons));
+  if (!wanted.length) return;
+  try { Object.assign(discover.icons, await window.petal.catalogIcons(wanted)); } catch { return; }
+  if (state.page === 'downloads') render();
+}
+/** One click: the newest release for this instance (any channel if there is no release), with dependencies for mods. */
+async function quickInstall(hit) {
+  if (hit.type === 'modpack') return chooseProject(hit);
+  discover.busyId = hit.id; render();
+  try {
+    const builds = await window.petal.catalogVersions({ projectId: hit.id, type: hit.type });
+    const usable = builds.filter(b => b.matches);
+    const build = usable.find(b => b.channel === 'release') || usable[0];
+    if (!build) {
+      if (!builds.length) throw new Error(`${hit.title} has no build for this instance.`);
+      // Packs that don't list this exact Minecraft version: let the player choose a build.
+      discover.notice = `${hit.title} doesn't list Minecraft ${state.boot.instance.gameVersion}. Choose a build below; most packs still work.`;
+      await chooseProject(hit);
+      return;
+    }
+    if (hit.type === 'mod') {
+      const records = await window.petal.installMod(build.id);
+      await refreshInstalled();
+      toast(records.length > 1 ? `${hit.title} and ${records.length - 1} required mod${records.length === 2 ? '' : 's'} installed.` : `${hit.title} installed. It loads next launch.`, 'success');
+    } else {
+      const result = await window.petal.installPackFile(build.id);
+      toast(result.already ? `${hit.title} is already installed.` : hit.type === 'shader'
+        ? `${hit.title} installed. Turn it on in game: Options, Video Settings, Shader Packs.`
+        : `${hit.title} installed. Turn it on in game: Options, Resource Packs.`, 'success');
+    }
+    hit.installed = true;
+  } catch (error) { toast(error.message, 'error'); }
+  finally { discover.busyId = ''; if (state.page === 'downloads') render(); }
 }
 async function chooseProject(project) {
   discover.project = project; discover.versions = []; discover.versionId = ''; discover.review = null; discover.notice = ''; discover.loading = true; render();
@@ -149,28 +199,46 @@ async function refreshInstalled() {
 function downloadsPage() {
   const instance = state.boot.instance;
   const busy = discover.loading || state.game.preparing || state.game.running;
-  const featured = h('div', { class: 'grid2' },
+  const kind = discover.type;
+  const needsFabric = (kind === 'mod' || kind === 'shader') && instance.loader !== 'fabric';
+  const featured = kind === 'modpack' ? h('div', { class: 'grid2' },
     h('section', { class: 'card' }, h('span', { class: 'label', text: 'Featured · Modrinth' }), h('h2', { text: 'SMP / ReichSMP' }),
       h('p', { class: 'note', text: 'A Fabric pack with performance and quality-of-life mods. Choose a published version, review it, and install it as a separate instance.' }),
       h('button', { class: 'btn btn-pink', text: 'Choose pack version', disabled: busy, onClick: () => chooseProject({ id: 'RSnh65gP', title: 'SMP / ReichSMP', type: 'modpack' }) })),
     h('section', { class: 'card' }, h('span', { class: 'label', text: 'Featured · CurseForge' }), h('h2', { text: 'Just Create SMP 2' }),
-      h('p', { class: 'note', text: 'Minecraft 1.21.1 · NeoForge. This release integrates Modrinth and Fabric/Vanilla instances. This CurseForge pack cannot be installed directly here yet; its official files page is available below.' }),
-      h('button', { class: 'btn btn-line', text: 'Open official files', onClick: () => attempt(() => window.petal.openFeatured('create')) })));
+      h('p', { class: 'note', text: 'Minecraft 1.21.1 · NeoForge. This CurseForge pack cannot be installed directly here yet; its official files page is available below.' }),
+      h('button', { class: 'btn btn-line', text: 'Open official files', onClick: () => attempt(() => window.petal.openFeatured('create')) }))) : null;
+  const setType = value => { discover.type = value; discover.category = ''; discover.hits = []; discover.total = 0; discover.project = null; discover.review = null; discover.notice = ''; searchCatalog(); };
+  const tabs = h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'What to browse' }, MODRINTH_TYPES.map(([value, label]) =>
+    h('button', { role: 'tab', 'aria-selected': String(kind === value), text: label, disabled: discover.loading || undefined, onClick: () => setType(value) })));
   const toolbar = h('form', { class: 'catalog-toolbar', onSubmit: event => { event.preventDefault(); searchCatalog(); } },
-    h('select', { 'aria-label': 'Download type', onChange: event => { discover.type = event.target.value; discover.hits = []; discover.project = null; render(); } },
-      ['modpack', 'mod'].map(type => h('option', { value: type, selected: discover.type === type, text: type === 'modpack' ? 'Modpacks' : 'Mods for this instance' }))),
-    h('input', { type: 'search', placeholder: 'Search Modrinth', value: discover.query, 'aria-label': 'Search Modrinth', onInput: event => { discover.query = event.target.value; } }),
-    h('button', { class: 'btn btn-pink', type: 'submit', text: 'Search', disabled: busy || (discover.type === 'mod' && instance.loader !== 'fabric') }),
-    h('button', { class: 'btn btn-line', type: 'button', text: 'Import local pack', disabled: busy, onClick: () => attempt(async () => { const result = await window.petal.importPack(); if (result) { discover.review = result; render(); } }) }));
+    h('input', { type: 'search', placeholder: `Search ${MODRINTH_TYPES.find(t => t[0] === kind)[1].toLowerCase()} on Modrinth`, value: discover.query, 'aria-label': 'Search Modrinth', onInput: event => { discover.query = event.target.value; } }),
+    h('select', { class: 'compact', 'aria-label': 'Sort results', onChange: event => { discover.sort = event.target.value; searchCatalog(); } },
+      MODRINTH_SORTS.map(([value, label]) => h('option', { value, selected: discover.sort === value, text: label }))),
+    h('button', { class: 'btn btn-pink', type: 'submit', text: 'Search', disabled: busy || needsFabric }),
+    kind === 'modpack' ? h('button', { class: 'btn btn-line', type: 'button', text: 'Import local pack', disabled: busy, onClick: () => attempt(async () => { const result = await window.petal.importPack(); if (result) { discover.review = result; render(); } }) }) : null);
+  const chips = h('div', { class: 'chip-row', role: 'group', 'aria-label': 'Category' },
+    ['', ...MODRINTH_CATEGORIES[kind]].map(c => h('button', { class: 'chip', 'aria-pressed': String(discover.category === c), text: c ? categoryLabel(c) : 'All', disabled: busy || needsFabric || undefined,
+      onClick: () => { discover.category = c; searchCatalog(); } })));
   const selection = discover.project ? h('section', { class: 'card catalog-selection' }, h('h2', { text: discover.project.title }),
     h('label', { class: 'field' }, h('span', { text: 'Published version' }),
       h('select', { 'aria-label': 'Published project version', onChange: event => { discover.versionId = event.target.value; } },
-        discover.versions.map(build => h('option', { value: build.id, selected: build.id === discover.versionId, text: `${build.name} · ${build.games.slice(0, 3).join(', ')} · ${build.loaders.join(', ')}` })))),
-    h('button', { class: 'btn btn-pink', text: discover.project.type === 'modpack' ? 'Review pack' : 'Install mod and required dependencies', disabled: busy || !discover.versionId, onClick: () => discover.project.type === 'modpack' ? reviewPack() : attempt(async () => {
-      const records = await window.petal.installMod(discover.versionId);
-      discover.notice = records.length ? `${records.length} mod files installed into ${instance.name}.` : 'This build is already installed.';
-      await refreshInstalled();
-    }) })) : null;
+        discover.versions.map(build => h('option', { value: build.id, selected: build.id === discover.versionId, text: `${build.name} · ${build.games.slice(-3).join(', ')} · ${build.loaders.join(', ')}${build.matches ? '' : ' · not listed for this version'}` })))),
+    h('div', { class: 'gallery-toolbar' },
+      h('button', { class: 'btn btn-pink', text: discover.project.type === 'modpack' ? 'Review pack' : discover.project.type === 'mod' ? 'Install mod and required dependencies' : 'Install this build', disabled: busy || !discover.versionId, onClick: () => discover.project.type === 'modpack' ? reviewPack() : attempt(async () => {
+        if (discover.project.type === 'mod') {
+          const records = await window.petal.installMod(discover.versionId);
+          discover.notice = records.length ? `${records.length} mod files installed into ${instance.name}.` : 'This build is already installed.';
+          await refreshInstalled();
+        } else {
+          const result = await window.petal.installPackFile(discover.versionId);
+          discover.notice = result.already ? 'This build is already installed.' : `${result.record.name} installed into ${instance.name}.`;
+        }
+        const hit = discover.hits.find(x => x.id === discover.project.id);
+        if (hit) hit.installed = true;
+        render();
+      }) }),
+      h('button', { class: 'btn btn-line', text: 'Close', onClick: () => { discover.project = null; render(); } }))) : null;
   const review = discover.review;
   const reviewCard = review ? h('section', { class: 'card pack-review' }, h('span', { class: 'label', text: 'Pack review' }), h('h2', { text: review.name }),
     h('p', { class: 'mono', text: `${review.gameVersion} · ${review.loader}${review.loaderVersion ? ` ${review.loaderVersion}` : ''} · ${review.files} client files` }),
@@ -182,24 +250,48 @@ function downloadsPage() {
       applyBootstrap(await window.petal.bootstrap());
       discover.notice = `${entry.name} installed. Your active instance is unchanged.`; render();
     }) })) : null;
-  return h('div', { class: 'catalog-page' }, featured,
-    h('section', { class: 'card' }, h('h2', { text: 'Discover on Modrinth' }),
-      h('p', { class: 'note', text: `Mod downloads target ${instance.name} · Minecraft ${instance.gameVersion} · ${instance.loader}. Packs create separate instances and do not add the Petal HUD automatically.` }), toolbar,
-      instance.loader !== 'fabric' && discover.type === 'mod' ? h('p', { class: 'note', text: 'Select or create a Fabric instance to install mods.' }) : null,
-      h('p', { class: 'note', role: 'status', text: discover.notice || (discover.loading ? 'Loading Modrinth…' : state.game.preparing ? state.progress?.label || 'Preparing download…' : 'Search mods or packs, then choose an exact published build.') }),
+  const results = discover.hits.map(hit => {
+    const img = hit.icon && discover.icons[hit.icon];
+    const working = discover.busyId === hit.id;
+    const action = hit.petalPack ? h('span', { class: 'badge petal', title: 'Petal installs this for you. Switch it on or off in Content, Petal Pack.', text: 'In Petal Pack' })
+      : hit.installed ? h('span', { class: 'badge modrinth', text: 'Installed' })
+      : h('button', { class: 'btn btn-pink slim', text: working ? 'Installing…' : hit.type === 'modpack' ? 'Review' : 'Install', disabled: busy || needsFabric || Boolean(discover.busyId) || undefined, onClick: () => quickInstall(hit) });
+    return h('article', { class: 'card mr-card' },
+      img ? h('img', { class: 'mr-icon', src: img, alt: '' }) : h('div', { class: 'mr-icon', 'aria-hidden': 'true', text: hit.title.replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '?' }),
+      h('div', { class: 'mr-body' },
+        h('div', { class: 'mr-head' }, h('h3', { class: 'mr-title', title: hit.title, text: hit.title }), hit.author ? h('span', { class: 'mr-author', text: `by ${hit.author}` }) : null),
+        h('p', { class: 'note small clamp', text: hit.description }),
+        h('div', { class: 'mr-meta' },
+          h('span', { class: 'mono', text: `${compactNumber(hit.downloads)} downloads` }),
+          hit.updated ? h('span', { class: 'mono', text: `updated ${relativeTime(hit.updated)}` }) : null,
+          hit.categories.slice(0, 3).map(c => h('span', { class: 'badge', text: categoryLabel(c) })))),
+      h('div', { class: 'mr-actions' }, action,
+        h('button', { class: 'btn btn-line slim', text: 'Versions', disabled: busy || needsFabric || undefined, onClick: () => chooseProject(hit) })));
+  });
+  const status = discover.notice || (discover.loading ? 'Searching Modrinth…' : state.game.preparing ? state.progress?.label || 'Working…'
+    : needsFabric ? `${kind === 'mod' ? 'Mods' : 'Shaders'} need a Fabric instance. Select Petal SMP Survival or another Fabric instance.`
+    : discover.searched && !discover.hits.length ? 'Nothing matches. Try another word or category.'
+    : kind === 'mod' ? `Mods install into ${instance.name} with everything they need.` : kind === 'modpack' ? 'Packs install as their own instance; your worlds stay where they are.'
+    : `${kind === 'shader' ? 'Shaders' : 'Resource packs'} download into ${instance.name}. Switch them on in game.`);
+  const pages = discover.total > discover.hits.length ? h('div', { class: 'gallery-toolbar mr-pages' },
+    h('button', { class: 'btn btn-dark', text: 'Previous', disabled: busy || discover.offset === 0, onClick: () => searchCatalog(Math.max(0, discover.offset - 20)) }),
+    h('span', { class: 'note', text: `${discover.offset + 1}–${Math.min(discover.offset + discover.hits.length, discover.total)} of ${discover.total.toLocaleString()}` }),
+    h('button', { class: 'btn btn-dark', text: 'Next', disabled: busy || discover.offset + 20 >= discover.total, onClick: () => searchCatalog(discover.offset + 20) })) : null;
+  if (!discover.searched && !discover.loading && !discover.notice && !needsFabric) setTimeout(() => { if (state.page === 'downloads' && !discover.searched && !discover.loading) searchCatalog(); }, 0);
+  return h('div', { class: 'catalog-page' },
+    h('section', { class: 'card' },
+      h('div', { class: 'card-head' }, h('div', {}, h('span', { class: 'label', text: 'Modrinth' }), h('h2', { text: 'Find mods, packs and shaders' })),
+        h('span', { class: 'mono small muted', text: `${instance.name} · ${instance.gameVersion} · ${instance.loader}` })),
+      tabs, toolbar, chips,
+      h('p', { class: 'note', role: 'status', text: status }),
       discover.created ? h('button', { class: 'btn btn-mint', text: `Select ${discover.created.name}`, disabled: busy, onClick: () => attempt(async () => { await selectInstance(discover.created.id); go('home'); }) }) : null,
       state.game.preparing ? h('button', { class: 'btn btn-line', text: 'Cancel operation', onClick: () => attempt(() => window.petal.cancelLaunch()) }) : null),
-    selection, reviewCard,
-    h('div', { class: 'catalog-results' }, discover.hits.map(hit => h('article', { class: 'card catalog-result' },
-      h('div', {}, h('h3', { text: hit.title }), h('p', { class: 'note', text: hit.description }), h('span', { class: 'mono', text: `${Number(hit.downloads).toLocaleString()} downloads` })),
-      h('button', { class: 'btn btn-line', text: 'Choose version', disabled: busy, onClick: () => chooseProject(hit) })))),
-    discover.total > 12 ? h('div', { class: 'gallery-toolbar' },
-      h('button', { class: 'btn btn-dark', text: 'Previous', disabled: busy || discover.offset === 0, onClick: () => searchCatalog(Math.max(0, discover.offset - 12)) }),
-      h('span', { class: 'note', text: `${discover.offset + 1}–${Math.min(discover.offset + 12, discover.total)} of ${discover.total}` }),
-      h('button', { class: 'btn btn-dark', text: 'Next', disabled: busy || discover.offset + 12 >= discover.total, onClick: () => searchCatalog(discover.offset + 12) })) : null,
-    h('section', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', { text: 'Mods downloaded here' }), h('button', { class: 'btn btn-line', text: 'Refresh', onClick: refreshInstalled })),
+    selection, reviewCard, featured,
+    h('div', { class: 'mr-grid' }, results),
+    pages,
+    kind === 'mod' && discover.installed.length ? h('section', { class: 'card' }, h('div', { class: 'card-head' }, h('h2', { text: 'Mods downloaded here' }), h('button', { class: 'btn btn-line', text: 'Refresh', onClick: refreshInstalled })),
       h('p', { class: 'note', text: 'Required dependencies are included. Disabling a downloaded mod keeps a disabled copy; files you added yourself are left alone.' }),
-      discover.installed.map(mod => h('div', { class: 'row' }, h('span', { text: mod.name }), h('button', { class: 'btn btn-line', text: 'Disable', disabled: busy, onClick: () => attempt(async () => { await window.petal.disableMod(mod.projectId); await refreshInstalled(); }) })))));
+      discover.installed.map(mod => h('div', { class: 'row' }, h('span', { class: 'ellipsis', text: mod.name }), h('button', { class: 'btn btn-line slim', text: 'Disable', disabled: busy, onClick: () => attempt(async () => { await window.petal.disableMod(mod.projectId); await refreshInstalled(); }) })))) : null);
 }
 function instancesPage() {
   const busy = state.game.running || state.game.preparing || library.loading;
@@ -942,7 +1034,12 @@ function contentPage() {
           h('button', { 'aria-pressed': String(contentView.show === key), text: label, onClick: () => { contentView.show = key; render(); } }))) : null),
       running && type === 'mods' ? h('p', { class: 'note', text: 'Minecraft is running. Close it to switch mods on or off.' }) : null,
       list),
-    type === 'mods' && instance.loader === 'fabric' ? h('button', { class: 'btn btn-line', text: 'Find more mods on Modrinth', onClick: () => { discover.type = 'mod'; go('downloads'); } }) : null);
+    ({ mods: 'mod', resourcepacks: 'resourcepack', shaderpacks: 'shader' })[type] && (type === 'resourcepacks' || instance.loader === 'fabric')
+      ? h('button', { class: 'btn btn-line', text: `Find more ${CONTENT_TYPES[type].toLowerCase()} on Modrinth`, onClick: () => {
+        const next = { mods: 'mod', resourcepacks: 'resourcepack', shaderpacks: 'shader' }[type];
+        if (discover.type !== next) { discover.type = next; discover.category = ''; discover.hits = []; discover.searched = false; discover.project = null; }
+        go('downloads');
+      } }) : null);
 }
 
 // ---------- console ----------

@@ -240,7 +240,18 @@ function registerIpc() {
     instances.select(entry.id);
     return entry;
   }));
-  handle('catalog:search', request => catalog.search({ ...request, gameVersion: instances.get().gameVersion, loader: instances.get().loader }));
+  handle('catalog:search', async request => {
+    const instance = instances.get();
+    const result = await catalog.search({ ...request, gameVersion: instance.gameVersion, loader: instance.loader });
+    // Mark what this instance already has, so the page shows "Installed" or "In Petal Pack" instead of Install.
+    const own = new Set([...(await catalog.installed(instanceDir()).catch(() => [])), ...(await catalog.installedPacks(instanceDir()))].map(r => r.projectId));
+    const lock = require('./lib/game/mods-lock.json');
+    const inPack = new Set(instance.petal ? [...lock.mods, ...(lock.resourcepacks || [])].map(m => m.projectId).filter(Boolean) : []);
+    for (const hit of result.hits) { hit.installed = own.has(hit.id); hit.petalPack = inPack.has(hit.id); }
+    return result;
+  });
+  handle('catalog:icons', urls => catalog.icons(urls));
+  handle('catalog:install-pack', versionId => libraryTask((signal, progress) => catalog.installPack(instanceDir(), instances.get(), versionId, { signal, progress })));
   handle('catalog:versions', request => catalog.versions(request.projectId, { type: request.type, gameVersion: instances.get().gameVersion }));
   handle('catalog:installed', () => catalog.installed(instanceDir()));
   handle('catalog:install', versionId => libraryTask((signal, progress) => catalog.installMod(instanceDir(), instances.get(), versionId, { signal, progress })));

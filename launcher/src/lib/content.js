@@ -107,7 +107,8 @@ async function list(instanceDir, type) {
     const rank = active ? active.indexOf(entry.name) : -1;
     items.push({
       file: entry.name,
-      name: meta?.name || base.replace(/\.(jar|zip)$/i, ''),
+      // Petal's own packs ship as Petal-UI-64x.zip; show them as "Petal UI 64x".
+      name: meta?.name || (managed.has(entry.name) && /^Petal-/.test(base) ? base.replace(/\.zip$/i, '').replace(/-/g, ' ') : base.replace(/\.(jar|zip)$/i, '')),
       version: meta?.version || null,
       description: meta?.description || null,
       folder: !isFile,

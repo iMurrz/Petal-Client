@@ -15,6 +15,7 @@
     { "slug": "modernfix", "name": "ModernFix", "category": "Performance" },
     { "slug": "moreculling", "name": "More Culling", "category": "Performance" },
 
+    { "slug": "modmenu", "name": "Mod Menu", "category": "Information", "note": "Lists every mod; several pack mods expect it." },
     { "slug": "jade", "name": "Jade", "category": "Information" },
     { "slug": "appleskin", "name": "AppleSkin", "category": "Information" },
     { "slug": "jei", "name": "Just Enough Items", "category": "Information", "alts": ["rei"], "altNames": ["Roughly Enough Items"] },

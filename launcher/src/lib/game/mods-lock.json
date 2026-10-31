@@ -1,7 +1,7 @@
 {
   "gameVersion": "1.21.11",
   "loader": "fabric",
-  "generatedAt": "2026-10-31T00:40:39.462Z",
+  "generatedAt": "2026-10-31T01:11:54.067Z",
   "mods": [
     {
       "slug": "fabric-api",
@@ -227,6 +227,50 @@
         "filename": "cloth-config-21.11.153-fabric.jar",
         "sha512": "8f455489d4b71069e998568cf4e1450116f4360a4eb481cd89117f629c6883164886cf63ca08ac4fc929dd13d1112152755a6216d4a1498ee6406ef102093e51",
         "size": 1148427
+      },
+      "dependencies": [],
+      "incompatible": []
+    },
+    {
+      "slug": "modmenu",
+      "kind": "mod",
+      "name": "Mod Menu",
+      "description": "Adds a mod menu to view the list of mods you have installed.",
+      "category": "Information",
+      "defaultEnabled": true,
+      "note": "Lists every mod; several pack mods expect it.",
+      "projectId": "mOgUt4GM",
+      "version": "17.0.1",
+      "versionId": "cLkYaVuL",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/cLkYaVuL/modmenu-17.0.1.jar",
+        "filename": "modmenu-17.0.1.jar",
+        "sha512": "cb68cc39c8da66d05a1d2054a0e7b62144881e0cdb5fd681bc4f337b1313fafac394246f4e0aa0c4b6343db9e9750250a00c1bb72689b762da685ce1ccfee51f",
+        "size": 960882
+      },
+      "dependencies": [
+        "fabric-api",
+        "placeholder-api"
+      ],
+      "incompatible": []
+    },
+    {
+      "slug": "placeholder-api",
+      "kind": "mod",
+      "name": "Text Placeholder API",
+      "description": "Placeholder and Text manipulation library for your Minecraft mods.",
+      "category": "library",
+      "defaultEnabled": false,
+      "projectId": "eXts2L7r",
+      "version": "2.8.2+1.21.10",
+      "versionId": "qxjzQ9xY",
+      "channel": "release",
+      "file": {
+        "url": "https://cdn.modrinth.com/data/eXts2L7r/versions/qxjzQ9xY/placeholder-api-2.8.2%2B1.21.10.jar",
+        "filename": "placeholder-api-2.8.2+1.21.10.jar",
+        "sha512": "507ab10b7938dcd14d33121b8462649bdbe575cef248e917dfdf7566078ab5d0195ca1add95eae4863de3f652eb56db0a8669a67d5b5344e094d086f9dab5a08",
+        "size": 268662
       },
       "dependencies": [],
       "incompatible": []
@@ -628,8 +672,8 @@
         "fabric-api"
       ],
       "incompatible": [
-        "sodium-dynamic-lights",
-        "ryoamiclights"
+        "ryoamiclights",
+        "sodium-dynamic-lights"
       ]
     },
     {
@@ -674,8 +718,8 @@
         "size": 635283
       },
       "dependencies": [
-        "fabric-api",
-        "fabric-language-kotlin"
+        "fabric-language-kotlin",
+        "fabric-api"
       ],
       "incompatible": []
     },

@@ -5,9 +5,12 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "AbstractClientPlayerMixin",
+    "AbstractContainerScreenMixin",
     "GameRendererMixin",
+    "GuiGraphicsMixin",
     "MinecraftMixin",
-    "MouseHandlerMixin"
+    "MouseHandlerMixin",
+    "ScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

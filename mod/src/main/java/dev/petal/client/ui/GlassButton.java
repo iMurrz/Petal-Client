@@ -77,15 +77,23 @@ public final class GlassButton extends AbstractButton {
             }
         }
 
+        // Labels are trimmed with an ellipsis so they always stay inside the button.
+        int room = x2 - (chevron ? 16 : 6) - tx;
         if (subtitle != null) {
-            g.drawString(font, getMessage(), tx, y1 + height / 2 - 9, text, false);
-            Draw.small(g, font, subtitle, tx, y1 + height / 2 + 2, bloom ? 0xD9FFFFFF : Theme.LILAC, 0.75f);
+            g.drawString(font, fit(font, getMessage().getString(), room), tx, y1 + height / 2 - 9, text, false);
+            Draw.small(g, font, fit(font, subtitle, (int) (room / 0.75f)), tx, y1 + height / 2 + 2, bloom ? 0xD9FFFFFF : Theme.LILAC, 0.75f);
         } else if (icon == null) {
-            g.drawCenteredString(font, getMessage(), x1 + width / 2, y1 + (height - 8) / 2, text);
+            g.drawCenteredString(font, fit(font, getMessage().getString(), width - 8), x1 + width / 2, y1 + (height - 8) / 2, text);
         } else {
-            g.drawString(font, getMessage(), tx, y1 + (height - 8) / 2, text, false);
+            g.drawString(font, fit(font, getMessage().getString(), room), tx, y1 + (height - 8) / 2, text, false);
         }
         if (chevron) Glyphs.draw(g, Glyphs.CHEVRON, x2 - 14, y1 + (height - 8) / 2, 1, 0xB3FFFFFF);
+    }
+
+    /** `text` cut to `max` pixels, ending in an ellipsis when it had to be shortened. */
+    public static String fit(Font font, String text, int max) {
+        if (font.width(text) <= max) return text;
+        return font.plainSubstrByWidth(text, Math.max(0, max - font.width("…"))).stripTrailing() + "…";
     }
 
     @Override

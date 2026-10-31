@@ -1,12 +1,15 @@
 package dev.petal.client.mixin;
 
 import dev.petal.client.module.ModuleManager;
+import com.mojang.blaze3d.platform.Window;
+import dev.petal.client.screen.PetalFrame;
 import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MouseHandler.class)
 abstract class MouseHandlerMixin {
@@ -27,5 +30,12 @@ abstract class MouseHandlerMixin {
             accumulatedDX /= factor;
             accumulatedDY /= factor;
         }
+    }
+
+    /** A menu framed in Petal's side menu sits further right; give it the mouse in its own coordinates. */
+    @Inject(method = "getScaledXPos(Lcom/mojang/blaze3d/platform/Window;)D", at = @At("RETURN"), cancellable = true)
+    private void petal$framedMouse(Window window, CallbackInfoReturnable<Double> cir) {
+        int offset = PetalFrame.offset();
+        if (offset != 0) cir.setReturnValue(cir.getReturnValue() - offset);
     }
 }

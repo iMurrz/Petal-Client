@@ -77,7 +77,7 @@ async function prepareInstance(instance, { signal, onProgress, deep = false }) {
   const metadata = instance.petal ? gameLock : await versions.resolveVersion(gameRoot, instance.gameVersion, instance.loader, instance.loaderVersion || undefined, signal);
   return prepareGame({ root: gameRoot, instanceId: instance.id, gameVersion: instance.gameVersion,
     loaderVersion: metadata.fabric.loaderVersion, gameMetadata: metadata,
-    bundledMods: instance.petal ? bundledMods() : [], standalone: !instance.petal, signal, onProgress, deep });
+    bundledMods: instance.petal ? bundledMods() : [], bundledPacks: instance.petal ? bundledPacks() : [], standalone: !instance.petal, signal, onProgress, deep });
 }
 
 async function bootstrap() {
@@ -92,6 +92,16 @@ function bundledMods() {
   const dir = app.isPackaged ? path.join(process.resourcesPath, 'mods') : path.join(__dirname, '..', '..', 'mod', 'build', 'libs');
   try {
     return fs.readdirSync(dir).filter(f => /^petal-client-.*\.jar$/.test(f) && !/-(sources|dev)\.jar$/.test(f)).map(f => path.join(dir, f));
+  } catch {
+    return [];
+  }
+}
+
+/** Petal UI and Petal Textures, shipped with the launcher and copied into the Petal instance. */
+function bundledPacks() {
+  const dir = app.isPackaged ? path.join(process.resourcesPath, 'resourcepacks') : path.join(__dirname, '..', '..', 'resourcepacks-ready');
+  try {
+    return fs.readdirSync(dir).filter(f => /^Petal-[A-Za-z0-9-]+\.zip$/.test(f)).map(f => path.join(dir, f));
   } catch {
     return [];
   }

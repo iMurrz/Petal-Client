@@ -197,6 +197,47 @@ function zipWith(name, text) {
     assert.ok(plan.tasks.some(t => path.basename(t.dest) === sodium.file.filename), 'Pack copy returns once theirs is gone');
   });
 
+  await check('resource packs: Faithful under Petal UI once, then the player\'s order', async () => {
+    const { planResourcePacks, orderPacks } = require('../src/lib/game/resourcepacks');
+    const lock = require('../src/lib/game/mods-lock.json');
+    const faithful = lock.resourcepacks.find(p => p.slug === 'faithful-64x');
+    assert.ok(faithful, 'Faithful is pinned');
+    const dir = path.join(temp, 'packs-instance');
+    const bundledDir = path.join(temp, 'bundled-packs');
+    fs.mkdirSync(bundledDir, { recursive: true });
+    const bundled = ['Petal-UI-64x.zip', 'Petal-Textures-64x.zip'].map(name => {
+      const file = path.join(bundledDir, name);
+      fs.writeFileSync(file, zipWith('pack.mcmeta', '{}'));
+      return file;
+    });
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'options.txt'), 'maxFps:260\nresourcePacks:["vanilla","fabric","file/Mine.zip"]\n');
+    const read = key => JSON.parse(fs.readFileSync(path.join(dir, 'options.txt'), 'utf8').split('\n').find(l => l.startsWith(`${key}:`)).slice(key.length + 1));
+    let plan = await planResourcePacks(dir, bundled);
+    assert.ok(plan.tasks.some(t => t.sha512 === faithful.file.sha512 && t.group === 'resourcepack'));
+    await plan.finalize();
+    const f = `file/${faithful.file.filename}`;
+    assert.deepEqual(read('resourcePacks'), ['vanilla', 'fabric', 'file/Mine.zip', f, 'file/Petal-UI-64x.zip']);
+    assert.ok(fs.existsSync(path.join(dir, 'resourcepacks', 'Petal-Textures-64x.zip')), 'Petal Textures is installed but left off');
+    assert.match(fs.readFileSync(path.join(dir, 'options.txt'), 'utf8'), /^maxFps:260$/m);
+    // The player turns Faithful off: the next launch leaves it off.
+    fs.writeFileSync(path.join(dir, 'options.txt'), 'resourcePacks:["vanilla","file/Petal-UI-64x.zip"]\n');
+    plan = await planResourcePacks(dir, bundled);
+    await plan.finalize();
+    assert.deepEqual(read('resourcePacks'), ['vanilla', 'file/Petal-UI-64x.zip']);
+    // A new Faithful build replaces the old file in place.
+    assert.deepEqual(orderPacks(['vanilla', 'file/Old.zip', 'file/Petal-UI-64x.zip'], { renamed: new Map([['file/Old.zip', 'file/New.zip']]) }), ['vanilla', 'file/New.zip', 'file/Petal-UI-64x.zip']);
+    // A pack added later slots in under the packs above it in Petal's stack.
+    assert.deepEqual(orderPacks(['vanilla', 'file/P.zip'], { add: ['file/F.zip'], stack: ['file/F.zip', 'file/P.zip'] }), ['vanilla', 'file/F.zip', 'file/P.zip']);
+    // The bundled zips match the pack sources and declare the 1.21.9+ format range.
+    const { readZipEntry } = require('../src/lib/zip');
+    for (const name of ['Petal-UI-64x', 'Petal-Textures-64x']) {
+      const meta = JSON.parse(await readZipEntry(path.join(__dirname, '..', '..', 'resourcepacks-ready', `${name}.zip`), 'pack.mcmeta'));
+      assert.deepEqual(meta, JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'pack', name, 'pack.mcmeta'), 'utf8')), `${name}.zip is out of date: rebuild it from pack/${name}`);
+      assert.ok(meta.pack.min_format <= 75 && meta.pack.max_format >= 75);
+    }
+  });
+
   await check('pack check: Fabric version ranges', () => {
     const { satisfies } = require('./check-pack-live');
     assert.equal(satisfies('1.10.8+mc1.21.11', '<=1.10.7'), false);

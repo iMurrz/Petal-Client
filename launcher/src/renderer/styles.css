@@ -498,3 +498,7 @@ body.reduce-motion *, body.reduce-motion *::before, body.reduce-motion *::after 
 .pack-groups { display: flex; flex-direction: column; gap: 18px; }
 .pack-group { display: flex; flex-direction: column; gap: 8px; }
 .pack-note { color: var(--blush); }
+
+/* Resource pack state on the Content page: packs are ordered in game, so this is a label, not a switch. */
+.pack-state { flex: none; font: 600 12px/1 'Geist Mono', monospace; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.pack-state.on { color: #ffd6ea; border-color: rgba(255, 79, 163, .45); background: rgba(255, 79, 163, .12); }

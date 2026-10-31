@@ -40,6 +40,31 @@ async function catalogSet(instanceDir) {
   } catch { return new Map(); }
 }
 
+/** The packs switched on in game, top of the stack first (options.txt stores them bottom first). */
+async function activePacks(instanceDir) {
+  try {
+    const line = (await fsp.readFile(path.join(instanceDir, 'options.txt'), 'utf8')).split(/\r?\n/).find(l => l.startsWith('resourcePacks:'));
+    const list = JSON.parse(line.slice('resourcePacks:'.length));
+    return Array.isArray(list) ? list.filter(id => typeof id === 'string' && id.startsWith('file/')).map(id => id.slice(5)).reverse() : [];
+  } catch { return []; }
+}
+
+/** pack.mcmeta description without Minecraft's § colour codes. Never throws. */
+async function packMeta(file, stat, folder) {
+  const key = `${file}|${stat.mtimeMs}|${stat.size}|pack`;
+  if (metaCache.has(key)) return metaCache.get(key);
+  let meta = null;
+  try {
+    const raw = folder ? await fsp.readFile(path.join(file, 'pack.mcmeta')) : await readZipEntry(file, 'pack.mcmeta');
+    const description = raw && JSON.parse(raw.toString('utf8')).pack?.description;
+    const text = typeof description === 'string' ? description : typeof description?.text === 'string' ? description.text : null;
+    if (text) meta = { description: text.replace(/§./g, '').replace(/\s+/g, ' ').trim().slice(0, 240) };
+  } catch { /* no readable pack.mcmeta: show the file name only */ }
+  if (metaCache.size > 2000) metaCache.clear();
+  metaCache.set(key, meta);
+  return meta;
+}
+
 /** fabric.mod.json name/version/description, cached by file identity. Never throws. */
 async function modMeta(file, stat) {
   const key = `${file}|${stat.mtimeMs}|${stat.size}`;
@@ -63,7 +88,8 @@ async function list(instanceDir, type) {
   const k = kind(type);
   const dir = path.join(instanceDir, k.folder);
   const entries = await fsp.readdir(dir, { withFileTypes: true }).catch(() => []);
-  const managed = type === 'mods' ? await managedSet(dir) : new Set();
+  const managed = type === 'shaderpacks' ? new Set() : await managedSet(dir);
+  const active = type === 'resourcepacks' ? await activePacks(instanceDir) : null;
   const catalog = type === 'mods' ? await catalogSet(instanceDir) : new Map();
   const items = [];
   for (const entry of entries) {
@@ -76,7 +102,9 @@ async function list(instanceDir, type) {
     const full = path.join(dir, entry.name);
     const stat = await fsp.stat(full).catch(() => null);
     if (!stat) continue;
-    const meta = type === 'mods' && isFile ? await modMeta(full, stat) : null;
+    const meta = type === 'mods' ? (isFile ? await modMeta(full, stat) : null) : type === 'resourcepacks' ? await packMeta(full, stat, !isFile) : null;
+    // Resource packs are switched on and ordered in game; the list shows where each one sits.
+    const rank = active ? active.indexOf(entry.name) : -1;
     items.push({
       file: entry.name,
       name: meta?.name || base.replace(/\.(jar|zip)$/i, ''),
@@ -85,13 +113,14 @@ async function list(instanceDir, type) {
       folder: !isFile,
       size: isFile ? stat.size : null,
       modified: stat.mtimeMs,
-      enabled: !disabledMatch,
+      enabled: active ? rank !== -1 : !disabledMatch,
+      position: rank === -1 ? null : rank + 1,
       managed: managed.has(entry.name),
       source: managed.has(entry.name) ? 'Petal' : catalog.has(base) ? 'Modrinth' : 'Added by you',
       projectId: catalog.get(base) || null
     });
   }
-  items.sort((a, b) => Number(b.managed) - Number(a.managed) || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  items.sort((a, b) => (a.position ?? Infinity) - (b.position ?? Infinity) || Number(b.managed) - Number(a.managed) || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
   return { type, folder: dir, items };
 }
 

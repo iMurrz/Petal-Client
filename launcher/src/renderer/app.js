@@ -881,6 +881,11 @@ function packView(data) {
       h('ul', { class: 'fixes' }, [...data.unavailable, ...data.skipped].map(u => h('li', { text: `${u.name}: ${u.reason}` })))) : null);
 }
 
+function ordinal(n) {
+  const tail = n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th';
+  return `${n}${tail}`;
+}
+
 function contentPage() {
   const instance = state.boot.instance;
   if (!contentTypes().includes(contentView.type)) contentView.type = 'mods';
@@ -907,7 +912,9 @@ function contentPage() {
             toast(`${item.name} ${item.enabled ? 'switched off' : 'switched on'}. Applies next launch.`, 'success');
             render();
           }) })
-        : null)));
+        : type === 'resourcepacks'
+          ? h('span', { class: `pack-state${item.enabled ? ' on' : ''}`, title: 'Switch packs on and reorder them in game: Options, then Resource Packs.', text: item.enabled ? (item.position === 1 ? 'On · top' : `On · ${ordinal(item.position)}`) : 'Off' })
+          : null)));
     if (!items.length) list.append(h('p', { class: 'note empty', text: contentView.loading ? 'Reading the folder…' : q ? 'Nothing matches that search.' : type === 'mods' ? 'No mods here yet. Add .jar files or find some in Downloads.' : `No ${CONTENT_TYPES[type].toLowerCase()} yet. Add .zip files or drop them in the folder.` }));
   };
   fill();
@@ -919,7 +926,7 @@ function contentPage() {
       h('button', { role: 'tab', 'aria-selected': String(key === type), text: CONTENT_TYPES[key], onClick: () => { contentView.type = key; contentView.query = ''; contentView.show = 'all'; loadContent(); } }))),
     type === 'pack' ? (data ? packView(data) : h('section', { class: 'card' }, h('p', { class: 'note', text: 'Loading the Petal Pack…' }))) : h('section', { class: 'card' },
       h('div', { class: 'card-head' },
-        h('div', {}, h('h2', { text: CONTENT_TYPES[type] }), h('span', { class: 'mono small muted', text: data ? (type === 'mods' ? `${enabled} of ${data.items.length} on` : `${data.items.length} installed`) : '…' })),
+        h('div', {}, h('h2', { text: CONTENT_TYPES[type] }), h('span', { class: 'mono small muted', text: data ? (type !== 'shaderpacks' ? `${enabled} of ${data.items.length} on` : `${data.items.length} installed`) : '…' })),
         h('div', { class: 'gallery-toolbar' },
           h('button', { class: 'btn btn-pink', text: 'Add files', disabled: running && type === 'mods', onClick: () => attempt(async () => {
             const result = await window.petal.addContent(type);
@@ -931,7 +938,7 @@ function contentPage() {
           h('button', { class: 'btn btn-line', text: 'Open folder', onClick: () => attempt(() => window.petal.openContentFolder(type)) }),
           h('button', { class: 'btn btn-dark', text: 'Refresh', disabled: contentView.loading, onClick: loadContent }))),
       h('div', { class: 'gallery-toolbar content-toolbar' }, search,
-        type === 'mods' ? h('div', { class: 'seg', role: 'group', 'aria-label': 'Show' }, [['all', 'All'], ['on', 'On'], ['off', 'Off']].map(([key, label]) =>
+        type !== 'shaderpacks' ? h('div', { class: 'seg', role: 'group', 'aria-label': 'Show' }, [['all', 'All'], ['on', 'On'], ['off', 'Off']].map(([key, label]) =>
           h('button', { 'aria-pressed': String(contentView.show === key), text: label, onClick: () => { contentView.show = key; render(); } }))) : null),
       running && type === 'mods' ? h('p', { class: 'note', text: 'Minecraft is running. Close it to switch mods on or off.' }) : null,
       list),

@@ -2,6 +2,8 @@
   "pack": {
     "pack_format": 75,
     "supported_formats": {"min_inclusive": 64, "max_inclusive": 75},
+    "min_format": 64,
+    "max_format": 75,
     "description": "§dPetal UI 64x Dark §8| §7Overlay for Faithful 64x\n§8Faithful © Faithful Resource Pack — faithfulpack.net"
   }
 }

@@ -39,6 +39,13 @@
         ]
       },
       {
+        "from": "../resourcepacks-ready",
+        "to": "resourcepacks",
+        "filter": [
+          "Petal-*.zip"
+        ]
+      },
+      {
         "from": "launchwrapper/build",
         "to": "launchwrapper",
         "filter": [

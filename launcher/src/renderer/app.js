@@ -557,11 +557,11 @@ function homePage() {
     launchCard);
 
   const news = h('section', { 'aria-labelledby': 'new-h' },
-    h('div', { class: 'section-head' }, h('h2', { id: 'new-h', text: "What's new in 2.1" })),
+    h('div', { class: 'section-head' }, h('h2', { id: 'new-h', text: "What's new in 2.2" })),
     h('div', { class: 'news' }, [
-      ['CONTENT', '#FF9ACF', 'Mods and packs, per instance', 'See every mod, resource pack and shader pack, switch mods on and off, and add files without digging through folders.'],
-      ['CRASH HELP', '#D69BFF', 'Know why it closed', 'When Minecraft crashes, Petal reads the crash report and tells you what went wrong and what to try next.'],
-      ['CONSOLE', '#8FF5D2', 'Live game output', 'Watch the game log as you play, filter warnings and errors, and copy it when asking for help. Ctrl K jumps anywhere.']
+      ['IN GAME', '#FF9ACF', 'Every menu in the Petal look', 'Settings, Singleplayer, Multiplayer and resource packs open inside Petal\'s side menu, and inventories wear Petal\'s colours.'],
+      ['FAITHFUL', '#D69BFF', 'Faithful, built in', 'Faithful 64x is on by default for blocks and items, with Petal UI on top. Change the order any time in game.'],
+      ['MODRINTH', '#8FF5D2', 'Browse and install', 'Find mods, resource packs, shaders and modpacks on Modrinth, filter by category and install with one click.']
     ].map(([tag, color, title, text]) => h('article', {}, h('span', { class: 'tag', style: { color }, text: tag }), h('span', { class: 'title', text: title }), h('p', { text })))));
 
   const guides = h('section', { class: 'card survival-guide' }, h('h2', { text: 'A little help for your next world' }),
